@@ -1,5 +1,7 @@
-package utez.edu.mx.orderApp.Models;
+package utez.edu.mx.orderApp.Models.Accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,15 +37,16 @@ public class UserAttribute {
     private String userPassword;
     @Column(name = "user_cellphone")
     private String userCellphone;
-    @Column(name = "user_token")
-    private String userToken;
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
-    @OneToMany(mappedBy = "userAttribute")
+    @JsonIgnore
+    @OneToMany(mappedBy = "userAttribute", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Administrator> administrators;
-    @OneToMany(mappedBy = "userAttribute")
+    @JsonIgnore
+    @OneToMany(mappedBy = "userAttribute", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommonUser> commonUsers;
-    @OneToMany(mappedBy = "userAttribute")
+    @JsonIgnore
+    @OneToMany(mappedBy = "userAttribute", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Worker> workers;
 }

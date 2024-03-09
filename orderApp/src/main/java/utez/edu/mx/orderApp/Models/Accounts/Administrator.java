@@ -1,4 +1,4 @@
-package utez.edu.mx.orderApp.Models;
+package utez.edu.mx.orderApp.Models.Accounts;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

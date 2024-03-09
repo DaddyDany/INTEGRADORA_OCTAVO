@@ -1,6 +1,7 @@
-package utez.edu.mx.orderApp.Models;
+package utez.edu.mx.orderApp.Models.Accounts;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +27,8 @@ public class Role {
     private String roleName;
     @Column(name = "role_description")
     private String roleDescription;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "role")
     private List<UserAttribute> userAttributes;
 }
