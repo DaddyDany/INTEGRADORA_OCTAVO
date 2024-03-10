@@ -1,14 +1,19 @@
 package utez.edu.mx.orderApp.Models.Categories;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import utez.edu.mx.orderApp.Models.Packages.Package;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,13 +35,17 @@ public class Category {
     private Boolean serviceState;
     @Column(name = "service_img_url")
     private String serviceImageUrl;
+    @JsonIgnore
+    @OneToMany(mappedBy = "category")
+    private List<Package> packages;
 
-    public Category(Long serviceId, String serviceName, String serviceDescription, String serviceQuote, Boolean serviceState, String serviceImageUrl) {
+    public Category(Long serviceId, String serviceName, String serviceDescription, String serviceQuote, Boolean serviceState, String serviceImageUrl, List<Package> packages) {
         this.serviceId = serviceId;
         this.serviceName = serviceName;
         this.serviceDescription = serviceDescription;
         this.serviceQuote = serviceQuote;
         this.serviceState = serviceState;
         this.serviceImageUrl = serviceImageUrl;
+        this.packages = packages;
     }
 }

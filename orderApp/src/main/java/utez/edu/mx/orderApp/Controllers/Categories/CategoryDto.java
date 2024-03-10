@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import utez.edu.mx.orderApp.Models.Categories.Category;
+import utez.edu.mx.orderApp.Models.Packages.Package;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +20,7 @@ public class CategoryDto {
     private String serviceQuote;
     private Boolean serviceState;
     private String serviceImageUrl;
+    private List<Package> packages;
     public Category getCategory(){
         return new Category(
                 getServiceId(),
@@ -24,7 +28,8 @@ public class CategoryDto {
                 getServiceDescription(),
                 getServiceQuote(),
                 getServiceState(),
-                getServiceImageUrl()
+                getServiceImageUrl(),
+                getPackages()
         );
     }
 }
