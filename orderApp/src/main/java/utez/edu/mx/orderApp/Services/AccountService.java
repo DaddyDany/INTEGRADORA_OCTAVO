@@ -18,6 +18,7 @@ import utez.edu.mx.orderApp.Repositories.Accounts.WorkerRepository;
 import utez.edu.mx.orderApp.Utils.Response;
 
 @Service
+@Transactional
 public class AccountService {
     @Autowired
     private UserAttributeRepository userAttributeRepository;

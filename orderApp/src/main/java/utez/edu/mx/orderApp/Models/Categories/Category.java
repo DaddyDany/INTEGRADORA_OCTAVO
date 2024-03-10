@@ -1,0 +1,42 @@
+package utez.edu.mx.orderApp.Models.Categories;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "services")
+@NoArgsConstructor
+public class Category {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "service_id")
+    private Long serviceId;
+    @Column(name = "service_name")
+    private String serviceName;
+    @Column(name = "service_description")
+    private String serviceDescription;
+    @Column(name = "service_quote")
+    private String serviceQuote;
+    @Column(name = "service_state")
+    private Boolean serviceState;
+    @Column(name = "service_img_url")
+    private String serviceImageUrl;
+
+    public Category(Long serviceId, String serviceName, String serviceDescription, String serviceQuote, Boolean serviceState, String serviceImageUrl) {
+        this.serviceId = serviceId;
+        this.serviceName = serviceName;
+        this.serviceDescription = serviceDescription;
+        this.serviceQuote = serviceQuote;
+        this.serviceState = serviceState;
+        this.serviceImageUrl = serviceImageUrl;
+    }
+}
