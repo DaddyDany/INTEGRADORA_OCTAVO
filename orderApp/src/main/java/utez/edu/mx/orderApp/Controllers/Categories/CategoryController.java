@@ -23,7 +23,7 @@ import utez.edu.mx.orderApp.Utils.Response;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity getAll() {
         return new ResponseEntity(
                 this.categoryService.getAll(),
@@ -41,7 +41,7 @@ public class CategoryController {
         );
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Response<Category>> insert(
             @Valid @RequestBody CategoryDto service
     ) {

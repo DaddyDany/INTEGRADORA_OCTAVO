@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import utez.edu.mx.orderApp.Controllers.Categories.CategoryDto;
-import utez.edu.mx.orderApp.Models.Categories.Category;
 import utez.edu.mx.orderApp.Models.Packages.Package;
 import utez.edu.mx.orderApp.Services.PackageService;
 import utez.edu.mx.orderApp.Utils.Response;
@@ -26,7 +24,7 @@ public class PackageController {
     @Autowired
     private PackageService packageService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity getAll() {
         return new ResponseEntity(
                 this.packageService.getAll(),
@@ -44,7 +42,7 @@ public class PackageController {
         );
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Response<Package>> insert(
             @Valid @RequestBody PackageDto packag
     ) {

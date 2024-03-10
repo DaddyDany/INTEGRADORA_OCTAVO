@@ -26,7 +26,9 @@ import utez.edu.mx.orderApp.Security.Service.UserDetailsServiceImpl;
 public class MainSecurity {
     private final String[] WHITE_LIST = {
             "/api/auth/**",
-            "/api/accounts/**"
+            "/api/accounts/**",
+            "/api/services/**",
+            "/api/packages/**"
     };
     private final UserDetailsServiceImpl service;
 
