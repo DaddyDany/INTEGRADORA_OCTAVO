@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import utez.edu.mx.orderApp.Models.Categories.Category;
+import utez.edu.mx.orderApp.Models.Orders.OrderPackage;
 import utez.edu.mx.orderApp.Models.Packages.Package;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,6 +23,7 @@ public class PackageDto {
     private Integer designatedHours;
     private Integer workersNumber;
     private Category category;
+    private List<OrderPackage> orderPackages;
     public Package getPackage(){
         return new Package(
                 getPackageId(),
@@ -29,7 +33,8 @@ public class PackageDto {
                 getPackageState(),
                 getDesignatedHours(),
                 getWorkersNumber(),
-                getCategory()
+                getCategory(),
+                getOrderPackages()
         );
     }
 
