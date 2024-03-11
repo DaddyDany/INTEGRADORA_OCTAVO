@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import utez.edu.mx.orderApp.Models.Accounts.CommonUser;
 import utez.edu.mx.orderApp.Models.Orders.Order;
+import utez.edu.mx.orderApp.Models.Orders.OrderCombo;
 import utez.edu.mx.orderApp.Models.Orders.OrderPackage;
 
 import java.sql.Time;
@@ -28,6 +29,7 @@ public class OrderDto {
     private Integer orderTotalHours;
     private CommonUser commonUser;
     private List<OrderPackage> orderPackages;
+    private List<OrderCombo> orderCombos;
     public Order getOrder(){
         return new Order(
                 getOrderId(),
@@ -40,7 +42,8 @@ public class OrderDto {
                 getOrderType(),
                 getOrderTotalHours(),
                 getCommonUser(),
-                getOrderPackages()
+                getOrderPackages(),
+                getOrderCombos()
         );
     }
 }

@@ -7,6 +7,7 @@ import lombok.Setter;
 import utez.edu.mx.orderApp.Models.Categories.Category;
 import utez.edu.mx.orderApp.Models.Orders.OrderPackage;
 import utez.edu.mx.orderApp.Models.Packages.Package;
+import utez.edu.mx.orderApp.Models.Packages.PackageCombo;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class PackageDto {
     private Integer workersNumber;
     private Category category;
     private List<OrderPackage> orderPackages;
+    private List<PackageCombo> packageCombos;
     public Package getPackage(){
         return new Package(
                 getPackageId(),
@@ -34,7 +36,8 @@ public class PackageDto {
                 getDesignatedHours(),
                 getWorkersNumber(),
                 getCategory(),
-                getOrderPackages()
+                getOrderPackages(),
+                getPackageCombos()
         );
     }
 

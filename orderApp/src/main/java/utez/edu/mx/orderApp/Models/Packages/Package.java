@@ -47,7 +47,11 @@ public class Package {
     @OneToMany(mappedBy = "aPackage")
     private List<OrderPackage> orderPackages;
 
-    public Package(Long packageId, String packageName, String packageDescription, Float packagePrice, Boolean packageState, Integer designatedHours, Integer workersNumber, Category category, List<OrderPackage> orderPackages) {
+    @JsonIgnore
+    @OneToMany(mappedBy = "aPackage")
+    private List<PackageCombo> packageCombos;
+
+    public Package(Long packageId, String packageName, String packageDescription, Float packagePrice, Boolean packageState, Integer designatedHours, Integer workersNumber, Category category, List<OrderPackage> orderPackages, List<PackageCombo> packageCombos) {
         this.packageId = packageId;
         this.packageName = packageName;
         this.packageDescription = packageDescription;
@@ -57,5 +61,6 @@ public class Package {
         this.workersNumber = workersNumber;
         this.category = category;
         this.orderPackages = orderPackages;
+        this.packageCombos = packageCombos;
     }
 }
