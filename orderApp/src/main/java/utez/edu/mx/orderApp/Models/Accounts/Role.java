@@ -30,5 +30,11 @@ public class Role {
 
     @JsonIgnore
     @OneToMany(mappedBy = "role")
-    private List<UserAttribute> userAttributes;
+    private List<Administrator> administrators;
+    @JsonIgnore
+    @OneToMany(mappedBy = "role")
+    private List<Worker> workers;
+    @JsonIgnore
+    @OneToMany(mappedBy = "role")
+    private List<CommonUser> commonUsers;
 }

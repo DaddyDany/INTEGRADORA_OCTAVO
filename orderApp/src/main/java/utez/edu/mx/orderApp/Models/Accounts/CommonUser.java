@@ -25,9 +25,21 @@ public class CommonUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "common_user_id")
     private Long commonUserId;
+    @Column(name = "user_name")
+    private String userName;
+    @Column(name = "user_first_last_name")
+    private String userFirstLastName;
+    @Column(name = "user_second_last_name")
+    private String userSecondLastName;
+    @Column(name = "user_email")
+    private String userEmail;
+    @Column(name = "user_password")
+    private String userPassword;
+    @Column(name = "user_cellphone")
+    private String userCellphone;
     @ManyToOne
-    @JoinColumn(name = "user_attributes_id", nullable = false)
-    private UserAttribute userAttribute;
+    @JoinColumn(name = "role_id")
+    private Role role;
     @JsonIgnore
     @OneToMany(mappedBy = "commonUser")
     private List<Order> orders;

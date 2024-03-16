@@ -4,24 +4,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import utez.edu.mx.orderApp.Controllers.Accounts.AccountDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.AdministratorDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.CommonUserDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.WorkerDto;
 import utez.edu.mx.orderApp.Models.Accounts.Administrator;
 import utez.edu.mx.orderApp.Models.Accounts.CommonUser;
 import utez.edu.mx.orderApp.Models.Accounts.Role;
-import utez.edu.mx.orderApp.Models.Accounts.UserAttribute;
 import utez.edu.mx.orderApp.Models.Accounts.Worker;
 import utez.edu.mx.orderApp.Repositories.Accounts.AdministratorRepository;
 import utez.edu.mx.orderApp.Repositories.Accounts.CommonUserRepository;
 import utez.edu.mx.orderApp.Repositories.Accounts.RoleRepository;
-import utez.edu.mx.orderApp.Repositories.Accounts.UserAttributeRepository;
 import utez.edu.mx.orderApp.Repositories.Accounts.WorkerRepository;
 import utez.edu.mx.orderApp.Utils.Response;
 
 @Service
 @Transactional
 public class AccountService {
-    @Autowired
-    private UserAttributeRepository userAttributeRepository;
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
@@ -33,72 +31,101 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Transactional
-    public Response createAccount(AccountDto accountDto) {
+    public Response createCommonUserAccount(CommonUserDto commonUserDto) {
         try {
-            UserAttribute userAttributes = new UserAttribute();
-            userAttributes.setUserCellphone(accountDto.getUserCellphone());
-            userAttributes.setUserEmail(accountDto.getUserEmail());
-            userAttributes.setUserFirstLastName(accountDto.getUserFirstLastName());
-            userAttributes.setUserName(accountDto.getUserName());
-            userAttributes.setUserPassword(passwordEncoder.encode(accountDto.getUserPassword()));
-            userAttributes.setUserSecondLastName(accountDto.getUserSecondLastName());
-            Role role = roleRepository.findById(accountDto.getRoleId())
-                    .orElseThrow(() -> new RuntimeException("Role not found"));
-            userAttributes.setRole(role);
-
-            userAttributes = userAttributeRepository.save(userAttributes);
-
-            switch (accountDto.getRoleId().intValue()) {
-                case 1 -> {
-                    CommonUser commonUser = new CommonUser();
-                    commonUser.setUserAttribute(userAttributes);
-                    commonUserRepository.save(commonUser);
-                }
-                case 2 -> {
-                    Worker worker = new Worker();
-                    worker.setUserAttribute(userAttributes);
-                    workerRepository.save(worker);
-                }
-                case 3 -> {
-                    Administrator administrator = new Administrator();
-                    administrator.setUserAttribute(userAttributes);
-                    administratorRepository.save(administrator);
-                }
-                default -> throw new IllegalArgumentException("Rol no valido");
-            }
+            CommonUser commonUser = new CommonUser();
+            commonUser.setUserCellphone(commonUserDto.getUserCellphone());
+            commonUser.setUserEmail(commonUserDto.getUserEmail());
+            commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
+            commonUser.setUserName(commonUserDto.getUserName());
+            commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
+            commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
+            Role role = roleRepository.findByRoleName("COMMON_USER")
+                            .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            commonUser.setRole(role);
+            commonUser = commonUserRepository.save(commonUser);
             return new Response(
-                    userAttributes.getUserAttributesId(),
+                    commonUser.getCommonUserId(),
                     false,
                     200,
-                    "La cuenta ha sido creada con exito"
+                    "La cuenta de usuario ha sido creada con exito"
             );
         }catch (RuntimeException e) {
             return new Response(
                     null,
                     true,
                     400,
-                    "Hubo un error creando la cuenta " +
+                    "Hubo un error creando la cuenta de usuario" +
                             e.getMessage()
             );
         }
     }
+
     @Transactional
-    public Response deleteAccount(Long userAttributeId) {
-        if (this.userAttributeRepository.existsById(userAttributeId)){
-            userAttributeRepository.deleteById(userAttributeId);
+    public Response createAdministratorAccount(AdministratorDto administratorDto) {
+        try {
+            Administrator administrator = new Administrator();
+            administrator.setAdminCellphone(administratorDto.getAdminCellphone());
+            administrator.setAdminEmail(administratorDto.getAdminEmail());
+            administrator.setAdminFirstLastName(administratorDto.getAdminFirstLastName());
+            administrator.setAdminName(administratorDto.getAdminName());
+            administrator.setAdminPassword(passwordEncoder.encode(administratorDto.getAdminPassword()));
+            administrator.setAdminSecondLastName(administratorDto.getAdminSecondLastName());
+            administrator.setAdminSalary(administratorDto.getAdminSalary());
+            administrator.setAdminSecurityNumber(administratorDto.getAdminSecurityNumber());
+            Role role = roleRepository.findByRoleName("ADMIN")
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            administrator.setRole(role);
+            administrator = administratorRepository.save(administrator);
             return new Response(
-                    null, 
+                    administrator.getAdminId(),
                     false,
                     200,
-                    "Cuenta eliminada Correctamente"
+                    "La cuenta de administrador ha sido creada con exito"
             );
-        }else {
+        }catch (RuntimeException e) {
             return new Response(
                     null,
                     true,
                     400,
-                    "Cuenta no encontrada, error al eliminar la cuenta"
+                    "Hubo un error creando la cuenta de administrador" +
+                            e.getMessage()
             );
         }
     }
+
+    @Transactional
+    public Response createWorkerAccount(WorkerDto workerDto) {
+        try {
+            Worker worker = new Worker();
+            worker.setWorkerCellphone(workerDto.getWorkerCellphone());
+            worker.setWorkerEmail(workerDto.getWorkerEmail());
+            worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
+            worker.setWorkerName(workerDto.getWorkerName());
+            worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
+            worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
+            worker.setWorkerSalary(workerDto.getWorkerSalary());
+            worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
+            worker.setWorkerRfc(workerDto.getWorkerRfc());
+            Role role = roleRepository.findByRoleName("WORKER")
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            worker.setRole(role);
+            worker = workerRepository.save(worker);
+            return new Response(
+                    worker.getWorkerId(),
+                    false,
+                    200,
+                    "La cuenta de trabajador ha sido creada con exito"
+            );
+        }catch (RuntimeException e) {
+            return new Response(
+                    null,
+                    true,
+                    400,
+                    "Hubo un error creando la cuenta de trabajador" +
+                            e.getMessage()
+            );
+        }
+    }
+
 }

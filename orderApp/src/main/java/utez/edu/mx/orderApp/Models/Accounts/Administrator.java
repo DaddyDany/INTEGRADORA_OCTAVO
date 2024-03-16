@@ -20,7 +20,24 @@ public class Administrator {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "admin_id")
     private Long adminId;
+    @Column(name = "admin_name")
+    private String adminName;
+    @Column(name = "admin_first_last_name")
+    private String adminFirstLastName;
+    @Column(name = "admin_second_last_name")
+    private String adminSecondLastName;
+    @Column(name = "admin_email")
+    private String adminEmail;
+    @Column(name = "admin_password")
+    private String adminPassword;
+    @Column(name = "admin_cellphone")
+    private String adminCellphone;
+    @Column(name = "admin_security_number")
+    private Integer adminSecurityNumber;
+    @Column(name = "admin_salary")
+    private Integer adminSalary;
     @ManyToOne
-    @JoinColumn(name = "user_attributes_id", nullable = false)
-    private UserAttribute userAttribute;
+    @JoinColumn(name = "role_id")
+    private Role role;
+
 }

@@ -10,7 +10,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import utez.edu.mx.orderApp.Models.Accounts.UserAttribute;
 
 @Getter
 @Setter
@@ -21,7 +20,25 @@ public class Worker {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "worker_id")
     private Long workerId;
+    @Column(name = "worker_name")
+    private String workerName;
+    @Column(name = "worker_first_last_name")
+    private String workerFirstLastName;
+    @Column(name = "worker_second_last_name")
+    private String workerSecondLastName;
+    @Column(name = "worker_email")
+    private String workerEmail;
+    @Column(name = "worker_password")
+    private String workerPassword;
+    @Column(name = "worker_cellphone")
+    private String workerCellphone;
+    @Column(name = "worker_security_number")
+    private Integer workerSecurityNumber;
+    @Column(name = "worker_salary")
+    private Integer workerSalary;
+    @Column(name = "worker_rfc")
+    private String workerRfc;
     @ManyToOne
-    @JoinColumn(name = "user_attributes_id", nullable = false)
-    private UserAttribute userAttribute;
+    @JoinColumn(name = "role_id")
+    private Role role;
 }
