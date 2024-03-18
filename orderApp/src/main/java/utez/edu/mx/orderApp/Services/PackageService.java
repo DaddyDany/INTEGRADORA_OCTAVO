@@ -88,4 +88,15 @@ public class PackageService {
                 "No existe el paquete buscado"
         );
     }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response findAllPackagesByServiceId(Long serviceId) {
+        return new Response<List<Package>>(
+                this.packageRepository.findByServiceId(serviceId),
+                false,
+                200,
+                "OK"
+        );
+    }
+
 }

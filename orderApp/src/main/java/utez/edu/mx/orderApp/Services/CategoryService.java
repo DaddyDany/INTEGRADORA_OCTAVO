@@ -46,6 +46,7 @@ public class CategoryService {
                     200,
                     "Ya existe este servicio"
             );
+        service.setServiceState(false);
         return new Response(
                 this.categoryRepository.saveAndFlush(service),
                 false,

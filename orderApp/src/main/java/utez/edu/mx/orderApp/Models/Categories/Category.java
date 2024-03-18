@@ -39,13 +39,10 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private List<Package> packages;
 
-    public Category(Long serviceId, String serviceName, String serviceDescription, String serviceQuote, Boolean serviceState, String serviceImageUrl, List<Package> packages) {
-        this.serviceId = serviceId;
+    public Category(String serviceName, String serviceDescription, String serviceQuote, String serviceImageUrl) {
         this.serviceName = serviceName;
         this.serviceDescription = serviceDescription;
         this.serviceQuote = serviceQuote;
-        this.serviceState = serviceState;
         this.serviceImageUrl = serviceImageUrl;
-        this.packages = packages;
     }
 }

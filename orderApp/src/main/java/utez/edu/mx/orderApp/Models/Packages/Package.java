@@ -51,16 +51,12 @@ public class Package {
     @OneToMany(mappedBy = "aPackage")
     private List<PackageCombo> packageCombos;
 
-    public Package(Long packageId, String packageName, String packageDescription, Float packagePrice, Boolean packageState, Integer designatedHours, Integer workersNumber, Category category, List<OrderPackage> orderPackages, List<PackageCombo> packageCombos) {
-        this.packageId = packageId;
+    public Package(String packageName, String packageDescription, Float packagePrice, Integer designatedHours, Integer workersNumber, Category category) {
         this.packageName = packageName;
         this.packageDescription = packageDescription;
         this.packagePrice = packagePrice;
-        this.packageState = packageState;
         this.designatedHours = designatedHours;
         this.workersNumber = workersNumber;
         this.category = category;
-        this.orderPackages = orderPackages;
-        this.packageCombos = packageCombos;
     }
 }

@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderApp.Models.Categories.Category;
 import utez.edu.mx.orderApp.Services.CategoryService;
+import utez.edu.mx.orderApp.Services.PackageService;
 import utez.edu.mx.orderApp.Utils.Response;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/services")
@@ -23,10 +26,20 @@ import utez.edu.mx.orderApp.Utils.Response;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private PackageService packageService;
     @GetMapping
     public ResponseEntity getAll() {
         return new ResponseEntity(
                 this.categoryService.getAll(),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/{serviceId}/packages")
+    public ResponseEntity<List<Package>> getAllPackagesByServiceId(@PathVariable Long serviceId) {
+        return new ResponseEntity(
+                this.packageService.findAllPackagesByServiceId(serviceId),
                 HttpStatus.OK
         );
     }
