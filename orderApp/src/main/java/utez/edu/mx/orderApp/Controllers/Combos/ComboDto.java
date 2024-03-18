@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import utez.edu.mx.orderApp.Models.Combos.Combo;
-import utez.edu.mx.orderApp.Models.Orders.OrderCombo;
-import utez.edu.mx.orderApp.Models.Packages.PackageCombo;
 
 import java.util.List;
 
@@ -15,27 +13,34 @@ import java.util.List;
 @Setter
 @Getter
 public class ComboDto {
-    private Long comboId;
     private String comboName;
     private String comboDescription;
     private String comboImgUrl;
     private Float comboPrice;
     private Integer comboDesignatedHours;
     private Integer comboWorkersNumber;
-    private List<OrderCombo> orderCombos;
-    private List<PackageCombo> packageCombos;
+    private List<Long> packageIds;
+
     public Combo getCombo(){
         return new Combo(
-                getComboId(),
                 getComboName(),
                 getComboDescription(),
                 getComboImgUrl(),
                 getComboPrice(),
                 getComboDesignatedHours(),
-                getComboWorkersNumber(),
-                getOrderCombos(),
-                getPackageCombos()
+                getComboWorkersNumber()
         );
     }
-
+    @Override
+    public String toString() {
+        return "ComboDto{" +
+                "comboName='" + comboName + '\'' +
+                ", comboDescription='" + comboDescription + '\'' +
+                ", comboImgUrl='" + comboImgUrl + '\'' +
+                ", comboPrice=" + comboPrice +
+                ", comboDesignatedHours=" + comboDesignatedHours +
+                ", comboWorkersNumber=" + comboWorkersNumber +
+                ", packageIds=" + packageIds +
+                '}';
+    }
 }

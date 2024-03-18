@@ -1,6 +1,7 @@
 package utez.edu.mx.orderApp.Models.Combos;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -42,17 +43,14 @@ public class Combo {
     @OneToMany(mappedBy = "combo")
     private List<OrderCombo> orderCombos;
     @JsonIgnore
-    @OneToMany(mappedBy = "combo")
+    @OneToMany(mappedBy = "combo",  cascade = CascadeType.ALL)
     private List<PackageCombo> packageCombos;
-    public Combo(Long comboId, String comboName, String comboDescription, String comboImgUrl, Float comboPrice, Integer comboDesignatedHours, Integer comboWorkersNumber, List<OrderCombo> orderCombos, List<PackageCombo> packageCombos) {
-        this.comboId = comboId;
+    public Combo(String comboName, String comboDescription, String comboImgUrl, Float comboPrice, Integer comboDesignatedHours, Integer comboWorkersNumber) {
         this.comboName = comboName;
         this.comboDescription = comboDescription;
         this.comboImgUrl = comboImgUrl;
         this.comboPrice = comboPrice;
         this.comboDesignatedHours = comboDesignatedHours;
         this.comboWorkersNumber = comboWorkersNumber;
-        this.orderCombos = orderCombos;
-        this.packageCombos = packageCombos;
     }
 }

@@ -1,21 +1,34 @@
 package utez.edu.mx.orderApp.Services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import utez.edu.mx.orderApp.Controllers.Combos.ComboDto;
 import utez.edu.mx.orderApp.Models.Combos.Combo;
 import utez.edu.mx.orderApp.Models.Packages.Package;
+import utez.edu.mx.orderApp.Models.Packages.PackageCombo;
 import utez.edu.mx.orderApp.Repositories.Combos.ComboRepository;
+import utez.edu.mx.orderApp.Repositories.Packages.PackageComboRepository;
+import utez.edu.mx.orderApp.Repositories.Packages.PackageRepository;
 import utez.edu.mx.orderApp.Utils.Response;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class ComboService {
+    private static final Logger logger = LoggerFactory.getLogger(ComboService.class);
+
     @Autowired
     private ComboRepository comboRepository;
+    @Autowired
+    private PackageComboRepository packageComboRepository;
+    @Autowired
+    private PackageRepository packageRepository;
 
     @Transactional(readOnly = true)
     public Response getAll() {
@@ -38,16 +51,21 @@ public class ComboService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response insertCombo(Combo combo) {
-        if (this.comboRepository.existsByComboName(combo.getComboName()))
-            return new Response(
-                    null,
-                    true,
-                    200,
-                    "Ya existe este combo"
-            );
+    public Response insertCombo(ComboDto comboDto) {
+        logger.info("DTO recibido para insertar combo: {}", comboDto);
+        Combo combo = comboDto.getCombo();
+        Combo savedCombo = this.comboRepository.saveAndFlush(combo);
+        List<Long> packageIds = comboDto.getPackageIds();
+        for (Long packageId : packageIds) {
+            packageRepository.findById(packageId).ifPresent(aPackage -> {
+                PackageCombo packageCombo = new PackageCombo();
+                packageCombo.setCombo(savedCombo);
+                packageCombo.setAPackage(aPackage);
+                packageComboRepository.save(packageCombo);
+            });
+        }
         return new Response(
-                this.comboRepository.saveAndFlush(combo),
+                savedCombo,
                 false,
                 200,
                 "Combo registrado correctamente"

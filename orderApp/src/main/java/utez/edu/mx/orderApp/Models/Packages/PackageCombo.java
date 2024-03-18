@@ -11,7 +11,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderApp.Models.Combos.Combo;
-import utez.edu.mx.orderApp.Models.Orders.Order;
 
 @Getter
 @Setter

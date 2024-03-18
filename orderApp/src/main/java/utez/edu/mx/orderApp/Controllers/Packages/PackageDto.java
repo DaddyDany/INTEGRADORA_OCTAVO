@@ -33,4 +33,15 @@ public class PackageDto {
         );
     }
 
+    @Override
+    public String toString() {
+        return "PackageDto{" +
+                "packageName='" + packageName + '\'' +
+                ", packageDescription='" + packageDescription + '\'' +
+                ", packagePrice=" + packagePrice +
+                ", designatedHours=" + designatedHours +
+                ", workersNumber=" + workersNumber +
+                ", category=" + category +
+                '}';
+    }
 }

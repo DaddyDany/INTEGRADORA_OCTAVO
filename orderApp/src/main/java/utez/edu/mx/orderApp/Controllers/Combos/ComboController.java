@@ -43,10 +43,10 @@ public class ComboController {
 
     @PostMapping
     public ResponseEntity<Response<Combo>> insert(
-            @Valid @RequestBody ComboDto combo
+            @Valid @RequestBody ComboDto comboDto
     ) {
         return new ResponseEntity<>(
-                this.comboService.insertCombo(combo.getCombo()),
+                this.comboService.insertCombo(comboDto),
                 HttpStatus.CREATED
         );
     }
