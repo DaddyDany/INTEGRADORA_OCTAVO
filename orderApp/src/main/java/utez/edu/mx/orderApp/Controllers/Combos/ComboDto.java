@@ -31,16 +31,4 @@ public class ComboDto {
                 getComboWorkersNumber()
         );
     }
-    @Override
-    public String toString() {
-        return "ComboDto{" +
-                "comboName='" + comboName + '\'' +
-                ", comboDescription='" + comboDescription + '\'' +
-                ", comboImgUrl='" + comboImgUrl + '\'' +
-                ", comboPrice=" + comboPrice +
-                ", comboDesignatedHours=" + comboDesignatedHours +
-                ", comboWorkersNumber=" + comboWorkersNumber +
-                ", packageIds=" + packageIds +
-                '}';
-    }
 }

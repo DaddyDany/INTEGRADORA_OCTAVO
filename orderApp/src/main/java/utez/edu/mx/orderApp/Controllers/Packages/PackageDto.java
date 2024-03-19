@@ -4,10 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderApp.Models.Categories.Category;
-import utez.edu.mx.orderApp.Models.Orders.OrderPackage;
 import utez.edu.mx.orderApp.Models.Packages.Package;
-import utez.edu.mx.orderApp.Models.Packages.PackageCombo;
 
 import java.util.List;
 
@@ -22,6 +21,7 @@ public class PackageDto {
     private Integer designatedHours;
     private Integer workersNumber;
     private Category category;
+    private List<MultipartFile> images;
     public Package getPackage(){
         return new Package(
                 getPackageName(),
@@ -31,17 +31,5 @@ public class PackageDto {
                 getWorkersNumber(),
                 getCategory()
         );
-    }
-
-    @Override
-    public String toString() {
-        return "PackageDto{" +
-                "packageName='" + packageName + '\'' +
-                ", packageDescription='" + packageDescription + '\'' +
-                ", packagePrice=" + packagePrice +
-                ", designatedHours=" + designatedHours +
-                ", workersNumber=" + workersNumber +
-                ", category=" + category +
-                '}';
     }
 }

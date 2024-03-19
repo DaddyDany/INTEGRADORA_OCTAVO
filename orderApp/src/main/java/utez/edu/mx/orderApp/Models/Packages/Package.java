@@ -46,10 +46,13 @@ public class Package {
     @JsonIgnore
     @OneToMany(mappedBy = "aPackage")
     private List<OrderPackage> orderPackages;
-
     @JsonIgnore
     @OneToMany(mappedBy = "aPackage")
     private List<PackageCombo> packageCombos;
+    @JsonIgnore
+    @OneToMany(mappedBy = "aPackage")
+    private List<ImagePackage> imagePackages;
+
 
     public Package(String packageName, String packageDescription, Float packagePrice, Integer designatedHours, Integer workersNumber, Category category) {
         this.packageName = packageName;

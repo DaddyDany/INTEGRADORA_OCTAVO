@@ -3,11 +3,18 @@ package utez.edu.mx.orderApp.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import utez.edu.mx.orderApp.Controllers.Packages.PackageDto;
+import utez.edu.mx.orderApp.FirebaseIntegrations.FirebaseStorageService;
+import utez.edu.mx.orderApp.Models.Packages.ImagePackage;
 import utez.edu.mx.orderApp.Models.Packages.Package;
+import utez.edu.mx.orderApp.Repositories.Packages.ImagePackageRepository;
 import utez.edu.mx.orderApp.Repositories.Packages.PackageRepository;
 import utez.edu.mx.orderApp.Utils.Response;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,6 +22,10 @@ import java.util.List;
 public class PackageService {
     @Autowired
     private PackageRepository packageRepository;
+    @Autowired
+    private ImagePackageRepository imagePackageRepository;
+    @Autowired
+    private FirebaseStorageService firebaseStorageService;
 
     @Transactional(readOnly = true)
     public Response getAll() {
@@ -37,21 +48,30 @@ public class PackageService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response insertPackage(Package packag) {
-        if (this.packageRepository.existsByPackageName(packag.getPackageName()))
-            return new Response(
-                    null,
-                    true,
-                    200,
-                    "Ya existe este paquete"
-            );
-        return new Response(
-                this.packageRepository.saveAndFlush(packag),
-                false,
-                200,
-                "Paquete registrado correctamente"
-        );
+    public Response insertPackage(PackageDto packageDto) throws IOException {
+        if (this.packageRepository.existsByPackageName(packageDto.getPackageName()))
+            return new Response(null, true, 200, "Ya existe este paquete");
+
+        Package packag = packageDto.getPackage(); // Convierte DTO a entidad
+        List<ImagePackage> imagePackages = new ArrayList<>();
+
+        // Carga cada imagen a Firebase y crea entidades ImagePackage con las URLs
+        for (MultipartFile file : packageDto.getImages()) {
+            String imageUrl = firebaseStorageService.uploadFile(file); // Usa el método modificado para cargar la imagen
+            ImagePackage imagePackage = new ImagePackage();
+            imagePackage.setImageUrl(imageUrl);
+            imagePackage.setAPackage(packag); // Establece la relación con el paquete
+            imagePackages.add(imagePackage);
+        }
+
+        packag = this.packageRepository.saveAndFlush(packag); // Guarda el paquete
+
+        // Ahora guarda las entidades ImagePackage
+        imagePackageRepository.saveAll(imagePackages);
+
+        return new Response(packag, false, 200, "Paquete registrado correctamente, con imágenes");
     }
+
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response updatePackage(Package packag) {

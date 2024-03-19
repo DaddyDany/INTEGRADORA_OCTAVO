@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Firebase ###
+src/main/resources/orderapp-eaca6-firebase-adminsdk-qtn2q-d2105e1f00.json
