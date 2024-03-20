@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -26,7 +27,6 @@ public class PackageService {
     private ImagePackageRepository imagePackageRepository;
     @Autowired
     private FirebaseStorageService firebaseStorageService;
-
     @Transactional(readOnly = true)
     public Response getAll() {
         return new Response<List<Package>>(
@@ -36,7 +36,6 @@ public class PackageService {
                 "OK"
         );
     }
-
     @Transactional(readOnly = true)
     public Response getOne(long id) {
         return new Response<Object>(
@@ -46,33 +45,23 @@ public class PackageService {
                 "OK"
         );
     }
-
     @Transactional(rollbackFor = {SQLException.class})
     public Response insertPackage(PackageDto packageDto) throws IOException {
         if (this.packageRepository.existsByPackageName(packageDto.getPackageName()))
             return new Response(null, true, 200, "Ya existe este paquete");
-
-        Package packag = packageDto.getPackage(); // Convierte DTO a entidad
+        Package packag = packageDto.getPackage();
         List<ImagePackage> imagePackages = new ArrayList<>();
-
-        // Carga cada imagen a Firebase y crea entidades ImagePackage con las URLs
         for (MultipartFile file : packageDto.getImages()) {
-            String imageUrl = firebaseStorageService.uploadFile(file); // Usa el método modificado para cargar la imagen
+            String imageUrl = firebaseStorageService.uploadFile(file);
             ImagePackage imagePackage = new ImagePackage();
             imagePackage.setImageUrl(imageUrl);
-            imagePackage.setAPackage(packag); // Establece la relación con el paquete
+            imagePackage.setAPackage(packag);
             imagePackages.add(imagePackage);
         }
-
-        packag = this.packageRepository.saveAndFlush(packag); // Guarda el paquete
-
-        // Ahora guarda las entidades ImagePackage
+        packag = this.packageRepository.saveAndFlush(packag);
         imagePackageRepository.saveAll(imagePackages);
-
         return new Response(packag, false, 200, "Paquete registrado correctamente, con imágenes");
     }
-
-
     @Transactional(rollbackFor = {SQLException.class})
     public Response updatePackage(Package packag) {
         if (this.packageRepository.existsById(packag.getPackageId()))
@@ -89,10 +78,25 @@ public class PackageService {
                 "No existe el paquete buscado"
         );
     }
-
     @Transactional(rollbackFor = {SQLException.class})
     public Response deletePackage(Long id) {
-        if (this.packageRepository.existsById(id)) {
+        Optional<Package> packageOptional = this.packageRepository.findById(id);
+        if (packageOptional.isPresent()) {
+            Package packag = packageOptional.get();
+            for (ImagePackage imagePackage : packag.getImagePackages()) {
+                try {
+                    System.out.println(imagePackage.getImageUrl());
+                    firebaseStorageService.deleteFileFromFirebase(imagePackage.getImageUrl());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return new Response(
+                            null,
+                            true,
+                            500,
+                            "Error al eliminar imágenes en Firebase"
+                    );
+                }
+            }
             this.packageRepository.deleteById(id);
             return new Response(
                     null,
@@ -108,7 +112,6 @@ public class PackageService {
                 "No existe el paquete buscado"
         );
     }
-
     @Transactional(rollbackFor = {SQLException.class})
     public Response findAllPackagesByServiceId(Long serviceId) {
         return new Response<List<Package>>(

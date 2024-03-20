@@ -1,6 +1,7 @@
 package utez.edu.mx.orderApp.Models.Packages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -50,7 +51,7 @@ public class Package {
     @OneToMany(mappedBy = "aPackage")
     private List<PackageCombo> packageCombos;
     @JsonIgnore
-    @OneToMany(mappedBy = "aPackage")
+    @OneToMany(mappedBy = "aPackage", cascade = CascadeType.ALL)
     private List<ImagePackage> imagePackages;
 
 

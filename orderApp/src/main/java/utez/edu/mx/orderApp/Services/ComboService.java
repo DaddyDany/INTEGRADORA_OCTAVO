@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import utez.edu.mx.orderApp.Controllers.Combos.ComboDto;
 import utez.edu.mx.orderApp.Models.Combos.Combo;
+import utez.edu.mx.orderApp.Models.Packages.Package;
 import utez.edu.mx.orderApp.Models.Packages.PackageCombo;
 import utez.edu.mx.orderApp.Repositories.Combos.ComboRepository;
 import utez.edu.mx.orderApp.Repositories.Packages.PackageComboRepository;
@@ -13,6 +14,7 @@ import utez.edu.mx.orderApp.Utils.Response;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -100,5 +102,10 @@ public class ComboService {
                 200,
                 "No existe el combo buscado"
         );
+    }
+
+    public List<Package> getPackagesByComboId(Long comboId) {
+        List<PackageCombo> packageCombos = packageComboRepository.findByComboComboId(comboId);
+        return packageCombos.stream().map(PackageCombo::getAPackage).collect(Collectors.toList());
     }
 }

@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderApp.Models.Combos.Combo;
+import utez.edu.mx.orderApp.Models.Packages.Package;
 import utez.edu.mx.orderApp.Services.ComboService;
 import utez.edu.mx.orderApp.Utils.Response;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/combos")
@@ -69,5 +72,10 @@ public class ComboController {
                 this.comboService.deleteCombo(id),
                 HttpStatus.OK
         );
+    }
+
+    @GetMapping("/{comboId}/packages")
+    public List<Package> getPackagesByComboId(@PathVariable Long comboId) {
+        return comboService.getPackagesByComboId(comboId);
     }
 }
