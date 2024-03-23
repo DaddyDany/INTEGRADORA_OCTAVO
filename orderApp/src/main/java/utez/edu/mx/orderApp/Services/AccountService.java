@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import utez.edu.mx.orderApp.Controllers.Accounts.AdministratorDto;
-import utez.edu.mx.orderApp.Controllers.Accounts.CommonUserDto;
-import utez.edu.mx.orderApp.Controllers.Accounts.WorkerDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdministratorDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdministratorToAdminDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.CommonUserDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerToAdminDto;
 import utez.edu.mx.orderApp.Models.Accounts.Administrator;
 import utez.edu.mx.orderApp.Models.Accounts.CommonUser;
 import utez.edu.mx.orderApp.Models.Accounts.Role;
@@ -16,6 +18,9 @@ import utez.edu.mx.orderApp.Repositories.Accounts.CommonUserRepository;
 import utez.edu.mx.orderApp.Repositories.Accounts.RoleRepository;
 import utez.edu.mx.orderApp.Repositories.Accounts.WorkerRepository;
 import utez.edu.mx.orderApp.Utils.Response;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -92,6 +97,36 @@ public class AccountService {
                             e.getMessage()
             );
         }
+    }
+
+    public List<AdministratorToAdminDto> findAllAdministrators() {
+        List<Administrator> administrators = administratorRepository.findAllByRoleName("ADMIN");
+        return administrators.stream().map(this::convertToAdminDto).collect(Collectors.toList());
+    }
+
+    private AdministratorToAdminDto convertToAdminDto(Administrator administrator) {
+        AdministratorToAdminDto dto = new AdministratorToAdminDto();
+        dto.setAdminName(administrator.getAdminName());
+        dto.setAdminFirstLastName(administrator.getAdminFirstLastName());
+        dto.setAdminEmail(administrator.getAdminEmail());
+        dto.setAdminCellphone(administrator.getAdminCellphone());
+        return dto;
+    }
+
+    public List<WorkerToAdminDto> findAllWorkers() {
+        List<Worker> workers = workerRepository.findAllByRoleName("WORKER");
+        return workers.stream().map(this::convertToWorkerDto).collect(Collectors.toList());
+    }
+
+    private WorkerToAdminDto convertToWorkerDto(Worker worker) {
+        WorkerToAdminDto dto = new WorkerToAdminDto();
+        dto.setWorkerName(worker.getWorkerName());
+        dto.setWorkerFirstLastName(worker.getWorkerFirstLastName());
+        dto.setWorkerSecondLastName(worker.getWorkerSecondLastName());
+        dto.setWorkerCellphone(worker.getWorkerCellphone());
+        dto.setWorkerEmail(worker.getWorkerEmail());
+        dto.setWorkerRfc(worker.getWorkerRfc());
+        return dto;
     }
 
     @Transactional

@@ -1,4 +1,4 @@
-package utez.edu.mx.orderApp.Controllers.Accounts;
+package utez.edu.mx.orderApp.Controllers.Accounts.Dtos;
 
 import lombok.Getter;
 import lombok.Setter;
