@@ -15,5 +15,4 @@ public interface AdministratorRepository extends JpaRepository<Administrator, Lo
 
     @Query("SELECT a FROM Administrator a WHERE a.role.roleName = :roleName")
     List<Administrator> findAllByRoleName(@Param("roleName") String roleName);
-
 }

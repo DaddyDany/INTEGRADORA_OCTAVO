@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdministratorDto;
-import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdministratorToAdminDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.CommonUserDto;
 import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerDto;
-import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerToAdminDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerGiveInfoDto;
 import utez.edu.mx.orderApp.Models.Accounts.CommonUser;
 import utez.edu.mx.orderApp.Models.Accounts.Worker;
 import utez.edu.mx.orderApp.Services.AccountService;
@@ -55,9 +56,9 @@ public class AccountController {
     }
 
     @GetMapping("/administrators")
-    public ResponseEntity<List<AdministratorToAdminDto>> getAllAdministrators() {
+    public ResponseEntity<List<AdminGiveInfoDto>> getAllAdministrators() {
         try {
-            List<AdministratorToAdminDto> administrators = accountService.findAllAdministrators();
+            List<AdminGiveInfoDto> administrators = accountService.findAllAdministrators();
             return new ResponseEntity<>(administrators, HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -78,13 +79,25 @@ public class AccountController {
     }
 
     @GetMapping("/workers")
-    public ResponseEntity<List<WorkerToAdminDto>> getAllWorkers() {
+    public ResponseEntity<List<WorkerGiveInfoDto>> getAllWorkers() {
         try {
-            List<WorkerToAdminDto> workers = accountService.findAllWorkers();
+            List<WorkerGiveInfoDto> workers = accountService.findAllWorkers();
             return new ResponseEntity<>(workers, HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<Object> getUserProfile(Authentication authentication) {
+        String username = authentication.getName();
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Rol no encontrado"))
+                .getAuthority();
+
+        Object userProfile = accountService.getLoggedUserProfile(username, role);
+        return ResponseEntity.ok(userProfile);
     }
 
 //    @DeleteMapping("/{id}")

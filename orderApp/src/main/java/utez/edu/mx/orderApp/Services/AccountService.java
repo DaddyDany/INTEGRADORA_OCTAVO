@@ -1,14 +1,16 @@
 package utez.edu.mx.orderApp.Services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdministratorDto;
-import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdministratorToAdminDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.CommonUserDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.CommonUserGiveInfoDto;
 import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerDto;
-import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerToAdminDto;
+import utez.edu.mx.orderApp.Controllers.Accounts.Dtos.WorkerGiveInfoDto;
 import utez.edu.mx.orderApp.Models.Accounts.Administrator;
 import utez.edu.mx.orderApp.Models.Accounts.CommonUser;
 import utez.edu.mx.orderApp.Models.Accounts.Role;
@@ -99,13 +101,13 @@ public class AccountService {
         }
     }
 
-    public List<AdministratorToAdminDto> findAllAdministrators() {
+    public List<AdminGiveInfoDto> findAllAdministrators() {
         List<Administrator> administrators = administratorRepository.findAllByRoleName("ADMIN");
         return administrators.stream().map(this::convertToAdminDto).collect(Collectors.toList());
     }
 
-    private AdministratorToAdminDto convertToAdminDto(Administrator administrator) {
-        AdministratorToAdminDto dto = new AdministratorToAdminDto();
+    private AdminGiveInfoDto convertToAdminDto(Administrator administrator) {
+        AdminGiveInfoDto dto = new AdminGiveInfoDto(administrator);
         dto.setAdminName(administrator.getAdminName());
         dto.setAdminFirstLastName(administrator.getAdminFirstLastName());
         dto.setAdminEmail(administrator.getAdminEmail());
@@ -113,13 +115,13 @@ public class AccountService {
         return dto;
     }
 
-    public List<WorkerToAdminDto> findAllWorkers() {
+    public List<WorkerGiveInfoDto> findAllWorkers() {
         List<Worker> workers = workerRepository.findAllByRoleName("WORKER");
         return workers.stream().map(this::convertToWorkerDto).collect(Collectors.toList());
     }
 
-    private WorkerToAdminDto convertToWorkerDto(Worker worker) {
-        WorkerToAdminDto dto = new WorkerToAdminDto();
+    private WorkerGiveInfoDto convertToWorkerDto(Worker worker) {
+        WorkerGiveInfoDto dto = new WorkerGiveInfoDto(worker);
         dto.setWorkerName(worker.getWorkerName());
         dto.setWorkerFirstLastName(worker.getWorkerFirstLastName());
         dto.setWorkerSecondLastName(worker.getWorkerSecondLastName());
@@ -127,6 +129,25 @@ public class AccountService {
         dto.setWorkerEmail(worker.getWorkerEmail());
         dto.setWorkerRfc(worker.getWorkerRfc());
         return dto;
+    }
+
+    public Object getLoggedUserProfile(String username, String role) {
+        switch (role) {
+            case "ADMIN":
+                Administrator admin = administratorRepository.findByAdminName(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Admin no encontrado"));
+                return new AdminGiveInfoDto(admin);
+            case "WORKER":
+                Worker worker = workerRepository.findByWorkerName(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+                return new WorkerGiveInfoDto(worker);
+            case "COMMON_USER":
+                CommonUser commonUser = commonUserRepository.findByUserName(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuario común no encontrado"));
+                return new CommonUserGiveInfoDto(commonUser);
+            default:
+                throw new IllegalStateException("Tipo de usuario desconocido");
+        }
     }
 
     @Transactional
