@@ -1,9 +1,11 @@
 package utez.edu.mx.orderapp.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import utez.edu.mx.orderapp.controllers.combos.ComboDto;
+import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.models.packages.PackageCombo;
@@ -14,6 +16,7 @@ import utez.edu.mx.orderapp.utils.Response;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,8 +34,8 @@ public class ComboService {
     }
 
     @Transactional(readOnly = true)
-    public Response getAll() {
-        return new Response<List<Combo>>(
+    public Response<List<Combo>> getAll() {
+        return new Response<>(
                 this.comboRepository.findAll(),
                 false,
                 200,
@@ -41,17 +44,14 @@ public class ComboService {
     }
 
     @Transactional(readOnly = true)
-    public Response getOne(long id) {
-        return new Response<Object>(
-                this.comboRepository.findById(id),
-                false,
-                200,
-                "OK"
-        );
+    public Response<Combo> getOne(long id) {
+        Optional<Combo> combo = this.comboRepository.findById(id);
+        return combo.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Combo fetched successfully"))
+                .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Combo not found"));
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response insertCombo(ComboDto comboDto) {
+    public Response<Combo> insertCombo(ComboDto comboDto) {
         Combo combo = comboDto.getCombo();
         Combo savedCombo = this.comboRepository.saveAndFlush(combo);
         List<Long> packageIds = comboDto.getPackageIds();
@@ -63,7 +63,7 @@ public class ComboService {
                 packageComboRepository.save(packageCombo);
             });
         }
-        return new Response(
+        return new Response<>(
                 savedCombo,
                 false,
                 200,
@@ -72,15 +72,15 @@ public class ComboService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response updateCombo(Combo combo) {
+    public Response<Combo> updateCombo(Combo combo) {
         if (this.comboRepository.existsById(combo.getComboId()))
-            return new Response(
+            return new Response<>(
                     this.comboRepository.saveAndFlush(combo),
                     false,
                     200,
                     "Combo actualizado correctamente"
             );
-        return new Response(
+        return new Response<>(
                 null,
                 true,
                 200,
@@ -89,17 +89,17 @@ public class ComboService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response deleteCombo(Long id) {
+    public Response<Combo> deleteCombo(Long id) {
         if (this.comboRepository.existsById(id)) {
             this.comboRepository.deleteById(id);
-            return new Response(
+            return new Response<>(
                     null,
                     false,
                     200,
                     "Combo eliminado correctamente"
             );
         }
-        return new Response(
+        return new Response<>(
                 null,
                 true,
                 200,

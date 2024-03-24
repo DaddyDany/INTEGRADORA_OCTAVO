@@ -16,6 +16,7 @@ import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.CommonUserDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
+import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.accounts.Worker;
 import utez.edu.mx.orderapp.services.AccountService;
@@ -37,22 +38,16 @@ public class AccountController {
 
 
     @PostMapping("/create-common")
-    public ResponseEntity<CommonUser> createCommonUserAccount(@RequestBody CommonUserDto commonUserDto) {
-        try{
-            Response createdAccount = accountService.createCommonUserAccount(commonUserDto);
-            return new ResponseEntity(
-                    createdAccount,
-                    HttpStatus.CREATED
-            );
-        }catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Response<CommonUser>> createCommonUserAccount(@RequestBody CommonUserDto commonUserDto) {
+        CommonUser createdAccount = accountService.createCommonUserAccount(commonUserDto).getData();
+        Response<CommonUser> responseBody = new Response<>(createdAccount, false, HttpStatus.CREATED.value(), "Cuenta creada exitosamente");
+        return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
     }
     @PostMapping("/create-admin")
-    public ResponseEntity<AdministratorDto> createAdminAccount(@RequestBody AdministratorDto administratorDto) {
+    public ResponseEntity<Response<Administrator>> createAdminAccount(@RequestBody AdministratorDto administratorDto) {
         try{
-            Response createdAccount = accountService.createAdministratorAccount(administratorDto);
-            return new ResponseEntity(
+            Response<Administrator> createdAccount = accountService.createAdministratorAccount(administratorDto);
+            return new ResponseEntity<>(
                     createdAccount,
                     HttpStatus.CREATED
             );
@@ -72,10 +67,10 @@ public class AccountController {
     }
 
     @PostMapping("/create-worker")
-    public ResponseEntity<Worker> createAccount(@RequestBody WorkerDto workerDto) {
+    public ResponseEntity<Response<Worker>> createAccount(@RequestBody WorkerDto workerDto) {
         try{
-            Response createdAccount = accountService.createWorkerAccount(workerDto);
-            return new ResponseEntity(
+            Response<Worker> createdAccount = accountService.createWorkerAccount(workerDto);
+            return new ResponseEntity<>(
                     createdAccount,
                     HttpStatus.CREATED
             );

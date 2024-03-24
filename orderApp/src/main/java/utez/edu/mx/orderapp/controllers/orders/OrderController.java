@@ -13,9 +13,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import utez.edu.mx.orderapp.controllers.combos.ComboDto;
+import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.services.OrderService;
 import utez.edu.mx.orderapp.utils.Response;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -29,19 +33,20 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity getAll() {
-        return new ResponseEntity(
+    public ResponseEntity<Response<List<Order>>> getAll() {
+        return new ResponseEntity<>(
                 this.orderService.getAll(),
                 HttpStatus.OK
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getOne(
+    public ResponseEntity<Response<Order>> getOne(
             @PathVariable("id") Long id
     ) {
-        return new ResponseEntity(
-                this.orderService.getOne(id),
+        Response<Order> order = this.orderService.getOne(id);
+        return new ResponseEntity<>(
+                order,
                 HttpStatus.OK
         );
     }
@@ -57,20 +62,20 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity update(
+    public ResponseEntity<Response<Order>> update(
             @RequestBody OrderDto order
     ) {
-        return new ResponseEntity(
+        return new ResponseEntity<>(
                 this.orderService.updateOrder(order.getOrder()),
                 HttpStatus.OK
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Response<Order>> delete(
             @PathVariable("id") Long id
     ) {
-        return new ResponseEntity(
+        return new ResponseEntity<>(
                 this.orderService.deleteOrder(id),
                 HttpStatus.OK
         );

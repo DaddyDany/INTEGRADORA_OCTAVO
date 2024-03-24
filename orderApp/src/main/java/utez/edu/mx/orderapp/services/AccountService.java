@@ -43,7 +43,7 @@ public class AccountService {
     }
 
     @Transactional
-    public Response createCommonUserAccount(CommonUserDto commonUserDto) {
+    public Response<CommonUser> createCommonUserAccount(CommonUserDto commonUserDto) {
         try {
             CommonUser commonUser = new CommonUser();
             commonUser.setUserCellphone(commonUserDto.getUserCellphone());
@@ -52,29 +52,21 @@ public class AccountService {
             commonUser.setUserName(commonUserDto.getUserName());
             commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
             commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
+
             Role role = roleRepository.findByRoleName("COMMON_USER")
-                            .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
             commonUser.setRole(role);
             commonUser = commonUserRepository.save(commonUser);
-            return new Response(
-                    commonUser.getCommonUserId(),
-                    false,
-                    200,
-                    "La cuenta de usuario ha sido creada con exito"
-            );
-        }catch (RuntimeException e) {
-            return new Response(
-                    null,
-                    true,
-                    400,
-                    "Hubo un error creando la cuenta de usuario" +
-                            e.getMessage()
-            );
+
+            return new Response<>(commonUser, false, 200, "La cuenta de usuario ha sido creada con éxito");
+        } catch (RuntimeException e) {
+            return new Response<>(true, 200, "Hubo un error creando la cuenta de usuario: " + e.getMessage());
         }
     }
 
+
     @Transactional
-    public Response createAdministratorAccount(AdministratorDto administratorDto) {
+    public Response<Administrator> createAdministratorAccount(AdministratorDto administratorDto) {
         try {
             Administrator administrator = new Administrator();
             administrator.setAdminCellphone(administratorDto.getAdminCellphone());
@@ -89,20 +81,10 @@ public class AccountService {
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
             administrator.setRole(role);
             administrator = administratorRepository.save(administrator);
-            return new Response(
-                    administrator.getAdminId(),
-                    false,
-                    200,
-                    "La cuenta de administrador ha sido creada con exito"
-            );
+            return new Response<>(administrator,false, 200, "La cuenta de adminstrador ha sido creada con éxito");
+
         }catch (RuntimeException e) {
-            return new Response(
-                    null,
-                    true,
-                    400,
-                    "Hubo un error creando la cuenta de administrador" +
-                            e.getMessage()
-            );
+            return new Response<>(true, 200, "Hubo un error creando la cuenta de administrador: " + e.getMessage());
         }
     }
 
@@ -138,25 +120,27 @@ public class AccountService {
 
     public Object getLoggedUserProfile(String username, String role) {
         switch (role) {
-            case "ADMIN":
+            case "ADMIN" -> {
                 Administrator admin = administratorRepository.findByAdminName(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Admin no encontrado"));
                 return new AdminGiveInfoDto(admin);
-            case "WORKER":
+            }
+            case "WORKER" -> {
                 Worker worker = workerRepository.findByWorkerName(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
                 return new WorkerGiveInfoDto(worker);
-            case "COMMON_USER":
+            }
+            case "COMMON_USER" -> {
                 CommonUser commonUser = commonUserRepository.findByUserName(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuario común no encontrado"));
                 return new CommonUserGiveInfoDto(commonUser);
-            default:
-                throw new IllegalStateException("Tipo de usuario desconocido");
+            }
+            default -> throw new IllegalStateException("Tipo de usuario desconocido");
         }
     }
 
     @Transactional
-    public Response createWorkerAccount(WorkerDto workerDto) {
+    public Response<Worker> createWorkerAccount(WorkerDto workerDto) {
         try {
             Worker worker = new Worker();
             worker.setWorkerCellphone(workerDto.getWorkerCellphone());
@@ -172,20 +156,9 @@ public class AccountService {
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
             worker.setRole(role);
             worker = workerRepository.save(worker);
-            return new Response(
-                    worker.getWorkerId(),
-                    false,
-                    200,
-                    "La cuenta de trabajador ha sido creada con exito"
-            );
+            return new Response<>(worker, false, 200, "La cuenta de trabajador ha sido creada con éxito");
         }catch (RuntimeException e) {
-            return new Response(
-                    null,
-                    true,
-                    400,
-                    "Hubo un error creando la cuenta de trabajador" +
-                            e.getMessage()
-            );
+            return new Response<>(true, 200, "Hubo un error creando la cuenta de trabajador: " + e.getMessage());
         }
     }
 

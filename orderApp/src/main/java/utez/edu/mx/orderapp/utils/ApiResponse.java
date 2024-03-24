@@ -10,10 +10,9 @@ import org.springframework.http.HttpStatus;
 public class ApiResponse {
     private Object data;
     private HttpStatus status;
-    private boolean error = false; // Predeterminado a false, asumiendo la mayoría de respuestas no son errores
+    private boolean error = false;
     private String message;
 
-    // Constructor para inicializar todos los campos relevantes
     public ApiResponse(Object data, String message, HttpStatus status, boolean error) {
         this.data = data;
         this.message = message;

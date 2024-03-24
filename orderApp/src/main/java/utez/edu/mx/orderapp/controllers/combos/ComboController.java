@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.services.ComboService;
@@ -30,19 +31,21 @@ public class ComboController {
         this.comboService = comboService;
     }
     @GetMapping
-    public ResponseEntity getAll() {
-        return new ResponseEntity(
-                this.comboService.getAll(),
+    public ResponseEntity<Response<List<Combo>>> getAll() {
+        Response<List<Combo>> combos = this.comboService.getAll();
+        return new ResponseEntity<>(
+                combos,
                 HttpStatus.OK
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getOne(
+    public ResponseEntity<Response<Combo>> getOne(
             @PathVariable("id") Long id
     ) {
-        return new ResponseEntity(
-                this.comboService.getOne(id),
+        Response<Combo> combo = this.comboService.getOne(id);
+        return new ResponseEntity<>(
+                combo,
                 HttpStatus.OK
         );
     }
@@ -58,20 +61,20 @@ public class ComboController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity update(
+    public ResponseEntity<Response<Combo>> update(
             @RequestBody ComboDto combo
     ) {
-        return new ResponseEntity(
+        return new ResponseEntity<>(
                 this.comboService.updateCombo(combo.getCombo()),
                 HttpStatus.OK
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Response<Combo>> delete(
             @PathVariable("id") Long id
     ) {
-        return new ResponseEntity(
+        return new ResponseEntity<>(
                 this.comboService.deleteCombo(id),
                 HttpStatus.OK
         );

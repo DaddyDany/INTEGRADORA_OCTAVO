@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.services.PackageService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/packages")
@@ -33,23 +35,23 @@ public class PackageController {
     }
 
     @GetMapping
-    public ResponseEntity getAll() {
-        return new ResponseEntity(
+    public ResponseEntity<Response<List<Package>>> getAll() {
+        return new ResponseEntity<>(
                 this.packageService.getAll(),
                 HttpStatus.OK
         );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getOne(
+    public ResponseEntity<Response<Package>> getOne(
             @PathVariable("id") Long id
     ) {
-        return new ResponseEntity(
-                this.packageService.getOne(id),
+        Response<Package> packageResponse = this.packageService.getOne(id);
+        return new ResponseEntity<>(
+                packageResponse,
                 HttpStatus.OK
         );
     }
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Response<Package>> insert(
             @Valid @ModelAttribute PackageDto packag
@@ -61,20 +63,20 @@ public class PackageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity update(
+    public ResponseEntity<Response<Package>> update(
             @RequestBody PackageDto packag
     ) {
-        return new ResponseEntity(
+        return new ResponseEntity<>(
                 this.packageService.updatePackage(packag.getPackage()),
                 HttpStatus.OK
         );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity delete(
+    public ResponseEntity<Response<Package>> delete(
             @PathVariable("id") Long id
     ) {
-        return new ResponseEntity(
+        return new ResponseEntity<>(
                 this.packageService.deletePackage(id),
                 HttpStatus.OK
         );

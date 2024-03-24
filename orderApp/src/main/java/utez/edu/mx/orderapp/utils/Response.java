@@ -1,17 +1,22 @@
 package utez.edu.mx.orderapp.utils;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public class Response <T>{
-    T data;
-    boolean error;
-    int status;
-    String message;
+@Data
+public class Response<T> {
+    private T data;
+    private boolean error;
+    private int status;
+    private String message;
+    public Response(T data, boolean error, int status, String message) {
+        this.data = data;
+        this.error = error;
+        this.status = status;
+        this.message = message;
+    }
+    public Response(boolean error, int status, String message) {
+        this.error = error;
+        this.status = status;
+        this.message = message;
+    }
 }
