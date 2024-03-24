@@ -25,7 +25,7 @@ import utez.edu.mx.orderapp.security.service.UserDetailsServiceImpl;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class MainSecurity {
-    private final String[] WHITE_LIST = {
+    private final String[] whiteList = {
             "/api/auth/**",
             "/api/accounts/**",
             "/api/services/**",
@@ -68,7 +68,7 @@ public class MainSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers(WHITE_LIST).permitAll()
+                        req.requestMatchers(whiteList).permitAll()
 //                                .requestMatchers("/api/user/**").hasAuthority("ADMIN_ROLE")
 //                                .requestMatchers("/api/person/**").hasAnyAuthority("ADMIN_ROLE", "USER_ROLE")
                                 .anyRequest().authenticated()

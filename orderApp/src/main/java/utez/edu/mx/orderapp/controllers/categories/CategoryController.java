@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,62 +29,71 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final PackageService packageService;
 
+
     @Autowired
     public CategoryController(CategoryService categoryService, PackageService packageService, CategoryRepository categoryRepository){
         this.categoryService = categoryService;
         this.packageService = packageService;
     }
     @GetMapping
-    public ResponseEntity<Response<List<Category>>> getAll() {
+    public ResponseEntity<List<Category>> getAll() {
         Response<List<Category>> response = this.categoryService.getAll();
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.valueOf(response.getStatus()));
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<Category>> getOne(@PathVariable long id) {
+    public ResponseEntity<Category> getOne(@PathVariable Long id) {
         Response<Category> response = this.categoryService.getOne(id);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+        if(response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.valueOf(response.getStatus()));
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @GetMapping("/{serviceId}/packages")
-    public ResponseEntity<Response<List<Package>>> getAllPackagesByServiceId(@PathVariable Long serviceId) {
+    public ResponseEntity<List<Package>> getAllPackagesByServiceId(@PathVariable Long serviceId) {
         Response<List<Package>> response = this.packageService.findAllPackagesByServiceId(serviceId);
-        return new ResponseEntity<>(
-                response,
-                HttpStatus.valueOf(response.getStatus())
-        );
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.valueOf(response.getStatus()));
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Response<Category>> insert(
-            @Valid @RequestBody CategoryDto service
-    ) {
-        Response<Category> savedService = categoryService.insertCategory(service.getCategory());
-        return new ResponseEntity<>(
-                savedService,
-                HttpStatus.CREATED
-        );
+    public ResponseEntity<Category> insert(@Valid @RequestBody CategoryDto service) {
+        Response<Category> response = categoryService.insertCategory(service.getCategory());
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response<Category>> update(
-            @RequestBody CategoryDto service
-    ) {
-        Response<Category> updatedCategory = this.categoryService.updateCategory(service.getCategory());
-        return new ResponseEntity<>(
-                updatedCategory,
-                HttpStatus.OK
-        );
+    public ResponseEntity<Category> update(@PathVariable("id") Long id, @RequestBody CategoryDto service){
+        Category category = service.getCategory();
+        category.setServiceId(id);
+        Response<Category> response = this.categoryService.updateCategory(category);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Category>> delete(
-            @PathVariable("id") Long id
-    ) {
-        Response<Category> deletedCategory = this.categoryService.deleteCategory(id);
-        return new ResponseEntity<>(
-                deletedCategory,
-                HttpStatus.OK
-        );
+    public ResponseEntity<Category> delete(@PathVariable("id") Long id) {
+        Response<Category> response = this.categoryService.deleteCategory(id);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 }

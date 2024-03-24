@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 
@@ -23,52 +22,107 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "orders")
-@NoArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
     private Long orderId;
+
     @Column(name = "order_date")
     private Date orderDate;
+
     @Column(name = "order_state")
     private String orderState;
+
     @Column(name = "order_place")
     private String orderPlace;
+
     @Column(name = "order_time")
     private Time orderTime;
+
     @Column(name = "order_total_payment")
     private Float orderTotalPayment;
+
     @Column(name = "order_payment_state")
     private Boolean orderPaymentState;
+
     @Column(name = "order_type")
     private String orderType;
+
     @Column(name = "order_total_hours")
     private Integer orderTotalHours;
+
     @ManyToOne
     @JoinColumn(name = "common_user_id")
     private CommonUser commonUser;
+
     @JsonIgnore
     @OneToMany(mappedBy = "order")
     private List<OrderCombo> orderCombos;
+
     @JsonIgnore
     @OneToMany(mappedBy = "order")
     private List<OrderPackage> orderPackages;
 
+    protected Order() {
+        // Constructor for Hibernate's use only
+    }
+    public static class Builder {
+        private final Order order = new Order();
 
+        public Builder(Long orderId, Date orderDate, String orderState) {
+            order.orderId = orderId;
+            order.orderDate = orderDate;
+            order.orderState = orderState;
+        }
 
-    public Order(Long orderId, Date orderDate, String orderState, String orderPlace, Time orderTime, Float orderTotalPayment, Boolean orderPaymentState, String orderType, Integer orderTotalHours, CommonUser commonUser, List<OrderPackage> orderPackages, List<OrderCombo> orderCombos) {
-        this.orderId = orderId;
-        this.orderDate = orderDate;
-        this.orderState = orderState;
-        this.orderPlace = orderPlace;
-        this.orderTime = orderTime;
-        this.orderTotalPayment = orderTotalPayment;
-        this.orderPaymentState = orderPaymentState;
-        this.orderType = orderType;
-        this.orderTotalHours = orderTotalHours;
-        this.commonUser = commonUser;
-        this.orderPackages = orderPackages;
-        this.orderCombos = orderCombos;
+        public Builder withOrderPlace(String orderPlace) {
+            order.orderPlace = orderPlace;
+            return this;
+        }
+
+        public Builder withOrderTime(Time orderTime) {
+            order.orderTime = orderTime;
+            return this;
+        }
+
+        public Builder withOrderTotalPayment(Float orderTotalPayment) {
+            order.orderTotalPayment = orderTotalPayment;
+            return this;
+        }
+
+        public Builder withOrderPaymentState(Boolean orderPaymentState) {
+            order.orderPaymentState = orderPaymentState;
+            return this;
+        }
+
+        public Builder withOrderType(String orderType) {
+            order.orderType = orderType;
+            return this;
+        }
+
+        public Builder withOrderTotalHours(Integer orderTotalHours) {
+            order.orderTotalHours = orderTotalHours;
+            return this;
+        }
+
+        public Builder commonUser(CommonUser commonUser) {
+            order.commonUser = commonUser;
+            return this;
+        }
+
+        public Builder orderPackages(List<OrderPackage> orderPackages) {
+            order.orderPackages = orderPackages;
+            return this;
+        }
+
+        public Builder orderCombos(List<OrderCombo> orderCombos) {
+            order.orderCombos = orderCombos;
+            return this;
+        }
+
+        public Order build() {
+            return order;
+        }
     }
 }

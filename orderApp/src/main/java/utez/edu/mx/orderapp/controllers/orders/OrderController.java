@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import utez.edu.mx.orderapp.controllers.combos.ComboDto;
-import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.services.OrderService;
 import utez.edu.mx.orderapp.utils.Response;
@@ -33,51 +31,54 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<Response<List<Order>>> getAll() {
-        return new ResponseEntity<>(
-                this.orderService.getAll(),
-                HttpStatus.OK
-        );
+    public ResponseEntity<List<Order>> getAll() {
+        Response<List<Order>> response = this.orderService.getAll();
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<Order>> getOne(
-            @PathVariable("id") Long id
-    ) {
-        Response<Order> order = this.orderService.getOne(id);
-        return new ResponseEntity<>(
-                order,
-                HttpStatus.OK
-        );
+    public ResponseEntity<Order> getOne(@PathVariable("id") Long id) {
+        Response<Order> response = this.orderService.getOne(id);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Response<Order>> insert(
-            @Valid @RequestBody OrderDto order
-    ) {
-        return new ResponseEntity<>(
-                this.orderService.insertOrder(order.getOrder()),
-                HttpStatus.CREATED
-        );
+    public ResponseEntity<Order> insert(@Valid @RequestBody OrderDto order) {
+        Response<Order> response = this.orderService.insertOrder(order.toOrder());
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.CREATED);
+        }else{
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response<Order>> update(
-            @RequestBody OrderDto order
-    ) {
-        return new ResponseEntity<>(
-                this.orderService.updateOrder(order.getOrder()),
-                HttpStatus.OK
-        );
+    public ResponseEntity<Order> update(@PathVariable("id") Long id, @RequestBody OrderDto orderDto) {
+        Order order = orderDto.toOrder();
+        order.setOrderId(id);
+        Response<Order> response = this.orderService.updateOrder(order);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Order>> delete(
-            @PathVariable("id") Long id
-    ) {
-        return new ResponseEntity<>(
-                this.orderService.deleteOrder(id),
-                HttpStatus.OK
-        );
+    public ResponseEntity<Order> delete(@PathVariable("id") Long id) {
+        Response<Order> response = this.orderService.deleteOrder(id);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 }

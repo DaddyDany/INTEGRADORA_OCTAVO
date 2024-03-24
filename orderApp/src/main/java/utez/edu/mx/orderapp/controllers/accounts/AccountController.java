@@ -28,29 +28,23 @@ import java.util.List;
 @RequestMapping("/api/accounts")
 @CrossOrigin(origins = "http://localhost:5173")
 public class AccountController {
-
     private final AccountService accountService;
-
     @Autowired
     public AccountController(AccountService accountService){
         this.accountService = accountService;
     }
-
-
     @PostMapping("/create-common")
-    public ResponseEntity<Response<CommonUser>> createCommonUserAccount(@RequestBody CommonUserDto commonUserDto) {
+    public ResponseEntity<CommonUser> createCommonUserAccount(@RequestBody CommonUserDto commonUserDto) {
         CommonUser createdAccount = accountService.createCommonUserAccount(commonUserDto).getData();
         Response<CommonUser> responseBody = new Response<>(createdAccount, false, HttpStatus.CREATED.value(), "Cuenta creada exitosamente");
-        return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+        return new ResponseEntity<>(responseBody.getData(), HttpStatus.CREATED);
     }
+
     @PostMapping("/create-admin")
-    public ResponseEntity<Response<Administrator>> createAdminAccount(@RequestBody AdministratorDto administratorDto) {
+    public ResponseEntity<Administrator> createAdminAccount(@RequestBody AdministratorDto administratorDto) {
         try{
             Response<Administrator> createdAccount = accountService.createAdministratorAccount(administratorDto);
-            return new ResponseEntity<>(
-                    createdAccount,
-                    HttpStatus.CREATED
-            );
+            return new ResponseEntity<>(createdAccount.getData(), HttpStatus.CREATED);
         }catch (EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         }
@@ -67,11 +61,11 @@ public class AccountController {
     }
 
     @PostMapping("/create-worker")
-    public ResponseEntity<Response<Worker>> createAccount(@RequestBody WorkerDto workerDto) {
+    public ResponseEntity<Worker> createAccount(@RequestBody WorkerDto workerDto) {
         try{
             Response<Worker> createdAccount = accountService.createWorkerAccount(workerDto);
             return new ResponseEntity<>(
-                    createdAccount,
+                    createdAccount.getData(),
                     HttpStatus.CREATED
             );
         }catch (EntityNotFoundException e){

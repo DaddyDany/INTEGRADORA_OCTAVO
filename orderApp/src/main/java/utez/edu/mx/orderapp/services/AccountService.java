@@ -22,7 +22,6 @@ import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,6 +31,11 @@ public class AccountService {
     private final WorkerRepository workerRepository;
     private final AdministratorRepository administratorRepository;
     private final PasswordEncoder passwordEncoder;
+    private static final String ROLE_WORKER = "WORKER";
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_COMMON_USER = "COMMON_USER";
+    private static final String ROLE_NOT_FOUND = "Rol no encontrado";
+
 
     @Autowired
     public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder){
@@ -53,8 +57,8 @@ public class AccountService {
             commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
             commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
 
-            Role role = roleRepository.findByRoleName("COMMON_USER")
-                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            Role role = roleRepository.findByRoleName(ROLE_COMMON_USER)
+                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
             commonUser.setRole(role);
             commonUser = commonUserRepository.save(commonUser);
 
@@ -77,8 +81,8 @@ public class AccountService {
             administrator.setAdminSecondLastName(administratorDto.getAdminSecondLastName());
             administrator.setAdminSalary(administratorDto.getAdminSalary());
             administrator.setAdminSecurityNumber(administratorDto.getAdminSecurityNumber());
-            Role role = roleRepository.findByRoleName("ADMIN")
-                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            Role role = roleRepository.findByRoleName(ROLE_ADMIN)
+                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
             administrator.setRole(role);
             administrator = administratorRepository.save(administrator);
             return new Response<>(administrator,false, 200, "La cuenta de adminstrador ha sido creada con éxito");
@@ -89,8 +93,8 @@ public class AccountService {
     }
 
     public List<AdminGiveInfoDto> findAllAdministrators() {
-        List<Administrator> administrators = administratorRepository.findAllByRoleName("ADMIN");
-        return administrators.stream().map(this::convertToAdminDto).collect(Collectors.toList());
+        List<Administrator> administrators = administratorRepository.findAllByRoleName(ROLE_ADMIN);
+        return administrators.stream().map(this::convertToAdminDto).toList();
     }
 
     private AdminGiveInfoDto convertToAdminDto(Administrator administrator) {
@@ -103,8 +107,8 @@ public class AccountService {
     }
 
     public List<WorkerGiveInfoDto> findAllWorkers() {
-        List<Worker> workers = workerRepository.findAllByRoleName("WORKER");
-        return workers.stream().map(this::convertToWorkerDto).collect(Collectors.toList());
+        List<Worker> workers = workerRepository.findAllByRoleName(ROLE_WORKER);
+        return workers.stream().map(this::convertToWorkerDto).toList();
     }
 
     private WorkerGiveInfoDto convertToWorkerDto(Worker worker) {
@@ -120,17 +124,17 @@ public class AccountService {
 
     public Object getLoggedUserProfile(String username, String role) {
         switch (role) {
-            case "ADMIN" -> {
+            case ROLE_ADMIN -> {
                 Administrator admin = administratorRepository.findByAdminName(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Admin no encontrado"));
                 return new AdminGiveInfoDto(admin);
             }
-            case "WORKER" -> {
+            case ROLE_WORKER -> {
                 Worker worker = workerRepository.findByWorkerName(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
                 return new WorkerGiveInfoDto(worker);
             }
-            case "COMMON_USER" -> {
+            case ROLE_COMMON_USER -> {
                 CommonUser commonUser = commonUserRepository.findByUserName(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuario común no encontrado"));
                 return new CommonUserGiveInfoDto(commonUser);
@@ -152,8 +156,8 @@ public class AccountService {
             worker.setWorkerSalary(workerDto.getWorkerSalary());
             worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
             worker.setWorkerRfc(workerDto.getWorkerRfc());
-            Role role = roleRepository.findByRoleName("WORKER")
-                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            Role role = roleRepository.findByRoleName(ROLE_WORKER)
+                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
             worker.setRole(role);
             worker = workerRepository.save(worker);
             return new Response<>(worker, false, 200, "La cuenta de trabajador ha sido creada con éxito");

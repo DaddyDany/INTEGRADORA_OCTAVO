@@ -55,7 +55,7 @@ public class PackageService {
     @Transactional(rollbackFor = {SQLException.class})
     public Response<Package> insertPackage(PackageDto packageDto) throws IOException {
         if (this.packageRepository.existsByPackageName(packageDto.getPackageName()))
-            return new Response(null, true, 200, "Ya existe este paquete");
+            return new Response<>(null, true, 200, "Ya existe este paquete");
         Package packag = packageDto.getPackage();
         List<ImagePackage> imagePackages = new ArrayList<>();
         for (MultipartFile file : packageDto.getImages()) {
@@ -92,7 +92,6 @@ public class PackageService {
             Package packag = packageOptional.get();
             for (ImagePackage imagePackage : packag.getImagePackages()) {
                 try {
-                    System.out.println(imagePackage.getImageUrl());
                     firebaseStorageService.deleteFileFromFirebase(imagePackage.getImageUrl());
                 } catch (IOException e) {
                     e.printStackTrace();

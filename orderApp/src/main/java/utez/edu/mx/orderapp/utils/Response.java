@@ -19,4 +19,8 @@ public class Response<T> {
         this.status = status;
         this.message = message;
     }
+
+    public boolean isSuccess() {
+        return !error;
+    }
 }

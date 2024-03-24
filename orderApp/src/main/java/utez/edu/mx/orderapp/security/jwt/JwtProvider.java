@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
 
 @Service
@@ -17,8 +18,8 @@ public class JwtProvider {
     private String secret;
     @Value("${jwt.expiration}")
     private long expiration;
-    private final String TOKEN_HEADER = "Authorization";
-    private final String TOKEN_TYPE = "Bearer ";
+    private static final String TOKEN_HEADER = "Authorization";
+    private static final String TOKEN_TYPE = "Bearer ";
 
     public String generateToken(Authentication auth) {
         UserDetails user = (UserDetails) auth.getPrincipal();
@@ -51,23 +52,16 @@ public class JwtProvider {
     }
 
     public Claims resolveClaims(HttpServletRequest req) {
-        try {
-            String token = resolveToken(req);
-            if (token != null)
-                return parseJwtClaims(token);
-            return null;
-        } catch (ExpiredJwtException e) {
-            throw e;
-        } catch (Exception e) {
-            throw e;
-        }
+        String token = resolveToken(req);
+        if (token != null)
+            return parseJwtClaims(token);
+        return (Claims) Collections.emptyList();
     }
 
     public String resolveToken(HttpServletRequest req) {
         String bearerToken = req.getHeader(TOKEN_HEADER);
         if (bearerToken != null && bearerToken.startsWith(TOKEN_TYPE))
             return bearerToken.replace(TOKEN_TYPE, "");
-        // bearerToken.substring(TOKEN_TYPE.length());
         return null;
     }
 
@@ -79,6 +73,7 @@ public class JwtProvider {
             e.printStackTrace();
         } catch (Exception e){
             e.printStackTrace();
+            return false;
         }
         return false;
     }

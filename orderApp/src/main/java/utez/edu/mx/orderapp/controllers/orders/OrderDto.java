@@ -30,20 +30,17 @@ public class OrderDto {
     private CommonUser commonUser;
     private List<OrderPackage> orderPackages;
     private List<OrderCombo> orderCombos;
-    public Order getOrder(){
-        return new Order(
-                getOrderId(),
-                getOrderDate(),
-                getOrderState(),
-                getOrderPlace(),
-                getOrderTime(),
-                getOrderTotalPayment(),
-                getOrderPaymentState(),
-                getOrderType(),
-                getOrderTotalHours(),
-                getCommonUser(),
-                getOrderPackages(),
-                getOrderCombos()
-        );
+    public Order toOrder() {
+        return new Order.Builder(orderId, orderDate, orderState)
+                .withOrderPlace(orderPlace)
+                .withOrderTime(orderTime)
+                .withOrderTotalPayment(orderTotalPayment)
+                .withOrderPaymentState(orderPaymentState)
+                .withOrderType(orderType)
+                .withOrderTotalHours(orderTotalHours)
+                .commonUser(commonUser)
+                .orderPackages(orderPackages)
+                .orderCombos(orderCombos)
+                .build();
     }
 }

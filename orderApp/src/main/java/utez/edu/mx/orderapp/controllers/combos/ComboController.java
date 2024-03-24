@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.services.ComboService;
@@ -31,53 +30,55 @@ public class ComboController {
         this.comboService = comboService;
     }
     @GetMapping
-    public ResponseEntity<Response<List<Combo>>> getAll() {
-        Response<List<Combo>> combos = this.comboService.getAll();
-        return new ResponseEntity<>(
-                combos,
-                HttpStatus.OK
-        );
+    public ResponseEntity<List<Combo>> getAll() {
+        Response<List<Combo>> response = this.comboService.getAll();
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response<Combo>> getOne(
-            @PathVariable("id") Long id
-    ) {
-        Response<Combo> combo = this.comboService.getOne(id);
-        return new ResponseEntity<>(
-                combo,
-                HttpStatus.OK
-        );
+    public ResponseEntity<Combo> getOne(@PathVariable("id") Long id) {
+        Response<Combo> response = this.comboService.getOne(id);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Response<Combo>> insert(
-            @Valid @RequestBody ComboDto comboDto
-    ) {
-        return new ResponseEntity<>(
-                this.comboService.insertCombo(comboDto),
-                HttpStatus.CREATED
-        );
+    public ResponseEntity<Combo> insert(@Valid @RequestBody ComboDto comboDto) {
+        Response<Combo> response = this.comboService.insertCombo(comboDto);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.CREATED);
+        }else{
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response<Combo>> update(
-            @RequestBody ComboDto combo
-    ) {
-        return new ResponseEntity<>(
-                this.comboService.updateCombo(combo.getCombo()),
-                HttpStatus.OK
-        );
+    public ResponseEntity<Combo> update(@PathVariable("id") Long id, @RequestBody ComboDto comboDto) {
+        Combo combo = comboDto.getCombo();
+        combo.setComboId(id);
+        Response<Combo> response = this.comboService.updateCombo(combo);
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<Combo>> delete(
-            @PathVariable("id") Long id
-    ) {
-        return new ResponseEntity<>(
-                this.comboService.deleteCombo(id),
-                HttpStatus.OK
-        );
+    public ResponseEntity<Combo> delete(@PathVariable("id") Long id) {
+        Response<Combo> response = this.comboService.deleteCombo(id);
+        if (response.isSuccess()){
+            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
     }
 
     @GetMapping("/{comboId}/packages")
