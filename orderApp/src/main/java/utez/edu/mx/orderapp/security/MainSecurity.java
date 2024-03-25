@@ -60,8 +60,7 @@ public class MainSecurity {
 
     @Bean
     public JwtAuthenticationFilter filter() {
-        JwtProvider provider = new JwtProvider();
-        return new JwtAuthenticationFilter(provider, service);
+        return new JwtAuthenticationFilter();
     }
 
     @Bean
