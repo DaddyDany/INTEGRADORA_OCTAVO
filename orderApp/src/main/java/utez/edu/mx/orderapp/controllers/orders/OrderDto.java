@@ -18,29 +18,27 @@ import java.util.List;
 @Setter
 @Getter
 public class OrderDto {
-    private Long orderId;
     private Date orderDate;
-    private String orderState;
     private String orderPlace;
     private Time orderTime;
-    private Float orderTotalPayment;
-    private Boolean orderPaymentState;
-    private String orderType;
-    private Integer orderTotalHours;
-    private CommonUser commonUser;
-    private List<OrderPackage> orderPackages;
-    private List<OrderCombo> orderCombos;
-    public Order toOrder() {
-        return new Order.Builder(orderId, orderDate, orderState)
-                .withOrderPlace(orderPlace)
-                .withOrderTime(orderTime)
-                .withOrderTotalPayment(orderTotalPayment)
-                .withOrderPaymentState(orderPaymentState)
-                .withOrderType(orderType)
-                .withOrderTotalHours(orderTotalHours)
-                .commonUser(commonUser)
-                .orderPackages(orderPackages)
-                .orderCombos(orderCombos)
-                .build();
+    private Long commonUserId;
+    private List<Long> packagesIds;
+    private List<Long> combosIds;
+
+    public Order toOrder(CommonUser commonUser) {
+        Order order = new Order();
+        order.setOrderDate(this.orderDate);
+        order.setOrderPlace(this.orderPlace);
+        order.setOrderTime(this.orderTime);
+        // Estos valores serán establecidos en el servicio, por lo que no se incluyen aquí
+        // order.setOrderTotalPayment(...);
+        // order.setOrderTotalHours(...);
+        // order.setOrderType(...);
+        order.setCommonUser(commonUser); // El usuario se obtiene y pasa al método toOrder
+
+        // Nota: Las listas de IDs para paquetes y combos se manejarán en el servicio,
+        // no directamente en este método, ya que involucra la lógica de negocio adicional.
+
+        return order;
     }
 }

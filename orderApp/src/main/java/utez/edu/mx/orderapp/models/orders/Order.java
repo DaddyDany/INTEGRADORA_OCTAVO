@@ -1,6 +1,7 @@
 package utez.edu.mx.orderapp.models.orders;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class Order {
     private Float orderTotalPayment;
 
     @Column(name = "order_payment_state")
-    private Boolean orderPaymentState;
+    private String orderPaymentState;
 
     @Column(name = "order_type")
     private String orderType;
@@ -57,72 +59,24 @@ public class Order {
     private CommonUser commonUser;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "order")
-    private List<OrderCombo> orderCombos;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderCombo> orderCombos = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "order")
-    private List<OrderPackage> orderPackages;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderPackage> orderPackages = new ArrayList<>();
 
-    protected Order() {
-        // Constructor for Hibernate's use only
+    public Order() {
+        // Constructor vacío necesario para JPA
     }
-    public static class Builder {
-        private final Order order = new Order();
 
-        public Builder(Long orderId, Date orderDate, String orderState) {
-            order.orderId = orderId;
-            order.orderDate = orderDate;
-            order.orderState = orderState;
-        }
+    public Order(Date orderDate, String orderPlace, Time orderTime, CommonUser commonUser) {
+        this.orderDate = orderDate;
+        this.orderPlace = orderPlace;
+        this.orderTime = orderTime;
+        this.commonUser = commonUser;
+    }
 
-        public Builder withOrderPlace(String orderPlace) {
-            order.orderPlace = orderPlace;
-            return this;
-        }
-
-        public Builder withOrderTime(Time orderTime) {
-            order.orderTime = orderTime;
-            return this;
-        }
-
-        public Builder withOrderTotalPayment(Float orderTotalPayment) {
-            order.orderTotalPayment = orderTotalPayment;
-            return this;
-        }
-
-        public Builder withOrderPaymentState(Boolean orderPaymentState) {
-            order.orderPaymentState = orderPaymentState;
-            return this;
-        }
-
-        public Builder withOrderType(String orderType) {
-            order.orderType = orderType;
-            return this;
-        }
-
-        public Builder withOrderTotalHours(Integer orderTotalHours) {
-            order.orderTotalHours = orderTotalHours;
-            return this;
-        }
-
-        public Builder commonUser(CommonUser commonUser) {
-            order.commonUser = commonUser;
-            return this;
-        }
-
-        public Builder orderPackages(List<OrderPackage> orderPackages) {
-            order.orderPackages = orderPackages;
-            return this;
-        }
-
-        public Builder orderCombos(List<OrderCombo> orderCombos) {
-            order.orderCombos = orderCombos;
-            return this;
-        }
-
-        public Order build() {
-            return order;
-        }
+    public void addOrderPackage(OrderPackage orderPackage) {
     }
 }

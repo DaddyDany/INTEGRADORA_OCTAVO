@@ -52,6 +52,18 @@ public class PackageController {
             return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
         }
     }
+
+    @GetMapping("/package-info-users/{id}")
+    public ResponseEntity<?> getPackage(@PathVariable("id") Long id) {
+        Response<PackageInfoDto> response = packageService.getPackageWithImages(id);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response.getData());
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.valueOf(response.getStatus()))
+                    .body(response.getMessage());
+        }
+    }
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Package> insert(@Valid @ModelAttribute PackageDto packag) throws IOException {
         Response<Package> response = this.packageService.insertPackage(packag);

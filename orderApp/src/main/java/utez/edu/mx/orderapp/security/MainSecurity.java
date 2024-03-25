@@ -30,7 +30,8 @@ public class MainSecurity {
             "/api/accounts/**",
             "/api/services/**",
             "/api/packages/**",
-            "/api/combos/**"
+            "/api/combos/**",
+            "/api/orders/**"
     };
     private final UserDetailsServiceImpl service;
 
