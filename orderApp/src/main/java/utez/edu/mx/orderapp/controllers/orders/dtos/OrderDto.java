@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.controllers.orders;
+package utez.edu.mx.orderapp.controllers.orders.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +10,7 @@ import utez.edu.mx.orderapp.models.orders.OrderCombo;
 import utez.edu.mx.orderapp.models.orders.OrderPackage;
 
 import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
 public class OrderDto {
     private Date orderDate;
     private String orderPlace;
-    private Time orderTime;
+    private LocalDateTime orderTime;
     private Long commonUserId;
     private List<Long> packagesIds;
     private List<Long> combosIds;

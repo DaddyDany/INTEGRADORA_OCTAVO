@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.controllers.packages;
+package utez.edu.mx.orderapp.controllers.packages.dtos;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

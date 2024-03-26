@@ -1,9 +1,10 @@
-package utez.edu.mx.orderapp.controllers.packages;
+package utez.edu.mx.orderapp.controllers.packages.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import utez.edu.mx.orderapp.controllers.packages.dtos.ImageInfoDto;
 import utez.edu.mx.orderapp.models.categories.Category;
 
 import java.util.List;

@@ -2,8 +2,7 @@ package utez.edu.mx.orderapp.services.reviews;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import utez.edu.mx.orderapp.controllers.reviews.ReviewDto;
-import utez.edu.mx.orderapp.models.accounts.CommonUser;
+import utez.edu.mx.orderapp.controllers.reviews.dtos.ReviewDto;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.models.reviews.Review;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;

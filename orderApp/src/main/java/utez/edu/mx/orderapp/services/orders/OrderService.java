@@ -4,21 +4,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import utez.edu.mx.orderapp.controllers.orders.OrderDto;
-import utez.edu.mx.orderapp.controllers.orders.OrderInfoAdminDto;
-import utez.edu.mx.orderapp.controllers.orders.OrderResponseDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderAcceptanceDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
+import utez.edu.mx.orderapp.models.accounts.Worker;
 import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.models.orders.OrderCombo;
 import utez.edu.mx.orderapp.models.orders.OrderPackage;
+import utez.edu.mx.orderapp.models.orders.WorkerOrder;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
+import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.repositories.combos.ComboRepository;
 import utez.edu.mx.orderapp.repositories.orders.OrderRepository;
+import utez.edu.mx.orderapp.repositories.orders.WorkerOrderRepository;
 import utez.edu.mx.orderapp.repositories.packages.PackageRepository;
 import utez.edu.mx.orderapp.utils.Response;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,12 +40,16 @@ public class OrderService {
 
     private final PackageRepository packageRepository;
     private final ComboRepository comboRepository;
+    private final WorkerRepository workerRepository;
+    private final WorkerOrderRepository workerOrderRepository;
     @Autowired
-    public OrderService(OrderRepository orderRepository, CommonUserRepository commonUserRepository, PackageRepository packageRepository, ComboRepository comboRepository){
+    public OrderService(OrderRepository orderRepository, CommonUserRepository commonUserRepository, PackageRepository packageRepository, ComboRepository comboRepository, WorkerRepository workerRepository, WorkerOrderRepository workerOrderRepository){
         this.orderRepository = orderRepository;
         this.commonUserRepository = commonUserRepository;
         this.packageRepository = packageRepository;
         this.comboRepository = comboRepository;
+        this.workerRepository = workerRepository;
+        this.workerOrderRepository = workerOrderRepository;
     }
 
     @Transactional(readOnly = true)
@@ -134,12 +146,57 @@ public class OrderService {
     }
 
     @Transactional
-    public void acceptOrder(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+    public Response<String> acceptAndAssignWorkers(OrderAcceptanceDto dto) {
+        Optional<Order> orderOptional = orderRepository.findById(dto.getOrderId());
+        if (orderOptional.isEmpty()) {
+            return new Response<>(null, true, 404, "Orden no encontrada.");
+        }
+
+        Order order = orderOptional.get();
+        LocalDateTime orderStartTime = order.getOrderTime();
+        LocalDateTime orderEndTime = orderStartTime.plusHours(order.getOrderTotalHours());
+
+        for (Long workerId : dto.getWorkerIds()) {
+            Worker worker = workerRepository.findById(workerId)
+                    .orElseThrow(() -> new RuntimeException("Trabajador no encontrado."));
+            if (!isWorkerAvailable(workerId, orderStartTime, orderEndTime)) {
+                return new Response<>(null, true, 400, "El trabajador " + workerId + " no está disponible en el horario requerido.");
+            }
+            WorkerOrder workerOrder = new WorkerOrder();
+            workerOrder.setWorker(worker);
+            workerOrder.setOrder(order);
+            workerOrder.setAssignedHours(order.getOrderTotalHours());
+            workerOrder.setStartTime(orderStartTime);
+            workerOrder.setEndTime(orderEndTime);
+            workerOrderRepository.save(workerOrder);
+        }
         order.setOrderState("Aceptada");
-        order.setOrderPaymentState("Cobrada");
         orderRepository.save(order);
+
+        return new Response<>("Orden aceptada y trabajadores asignados exitosamente.", false, 200, "Éxito");
+    }
+
+
+    private boolean isWorkerAvailable(Long workerId, LocalDateTime startTime, LocalDateTime endTime) {
+        LocalDate date = startTime.toLocalDate();
+        List<WorkerOrder> assignmentsForDay = workerOrderRepository.findByWorkerIdAndDate(workerId, date);
+
+        long totalAssignedHoursForDay = assignmentsForDay.stream()
+                .mapToLong(assignment -> Duration.between(assignment.getStartTime(), assignment.getEndTime()).toHours())
+                .sum();
+        long hoursToAssign = Duration.between(startTime, endTime).toHours();
+        if (totalAssignedHoursForDay + hoursToAssign > 8) {
+            return false;
+        }
+        for (WorkerOrder assignment : assignmentsForDay) {
+            LocalDateTime existingAssignmentStart = assignment.getStartTime();
+            LocalDateTime existingAssignmentEnd = assignment.getEndTime();
+            boolean overlaps = !startTime.isAfter(existingAssignmentEnd.plusMinutes(30)) && !endTime.plusMinutes(30).isBefore(existingAssignmentStart);
+            if (overlaps) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Transactional

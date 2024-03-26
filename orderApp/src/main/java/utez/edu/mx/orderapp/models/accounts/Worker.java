@@ -7,9 +7,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import utez.edu.mx.orderapp.models.orders.WorkerOrder;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -41,4 +45,7 @@ public class Worker {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @OneToMany(mappedBy = "worker")
+    private Set<WorkerOrder> workerOrders;
 }

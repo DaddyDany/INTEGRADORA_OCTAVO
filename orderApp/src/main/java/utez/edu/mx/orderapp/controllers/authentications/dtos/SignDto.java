@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.controllers.authentications;
+package utez.edu.mx.orderapp.controllers.authentications.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderAcceptanceDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
@@ -97,13 +101,13 @@ public class OrderController {
         }
     }
 
-    @PatchMapping("/accept/{id}")
-    public ResponseEntity<?> acceptOrder(@PathVariable Long id) {
-        try {
-            orderService.acceptOrder(id);
-            return ResponseEntity.ok().body("Orden aceptada con éxito");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    @PatchMapping("/accept-and-assign")
+    public ResponseEntity<Response<String>> acceptAndAssignOrder(@RequestBody OrderAcceptanceDto orderAcceptanceDto) {
+        Response<String> response = orderService.acceptAndAssignWorkers(orderAcceptanceDto);
+        if (!response.isError()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(response.getStatus()).body(response);
         }
     }
 

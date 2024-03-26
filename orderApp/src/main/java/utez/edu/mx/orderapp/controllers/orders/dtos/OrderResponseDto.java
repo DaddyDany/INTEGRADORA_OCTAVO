@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.controllers.orders;
+package utez.edu.mx.orderapp.controllers.orders.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class OrderResponseDto {
     private Date orderDate;
     private String orderState;
     private String orderPlace;
-    private Time orderTime;
+    private LocalDateTime orderTime;
     private Float orderTotalPayment;
     private String orderPaymentState;
     private String orderType;

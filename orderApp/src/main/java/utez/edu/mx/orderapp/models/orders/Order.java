@@ -18,9 +18,11 @@ import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.reviews.Review;
 
 import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -42,7 +44,7 @@ public class Order {
     private String orderPlace;
 
     @Column(name = "order_time")
-    private Time orderTime;
+    private LocalDateTime orderTime;
 
     @Column(name = "order_total_payment")
     private Float orderTotalPayment;
@@ -68,6 +70,9 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderPackage> orderPackages = new ArrayList<>();
 
+    @OneToMany(mappedBy = "order")
+    private Set<WorkerOrder> workerOrders;
+
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Review review;
 
@@ -75,7 +80,7 @@ public class Order {
         // Constructor vacío necesario para JPA
     }
 
-    public Order(Date orderDate, String orderPlace, Time orderTime, CommonUser commonUser) {
+    public Order(Date orderDate, String orderPlace, LocalDateTime orderTime, CommonUser commonUser) {
         this.orderDate = orderDate;
         this.orderPlace = orderPlace;
         this.orderTime = orderTime;

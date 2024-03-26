@@ -2,8 +2,8 @@ package utez.edu.mx.orderapp.services.orders;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import utez.edu.mx.orderapp.controllers.orders.OrderInfoAdminDto;
-import utez.edu.mx.orderapp.controllers.orders.OrderResponseDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.orders.Order;
 
 @Service

@@ -5,12 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import utez.edu.mx.orderapp.controllers.packages.ImageInfoDto;
-import utez.edu.mx.orderapp.controllers.packages.PackageDto;
-import utez.edu.mx.orderapp.controllers.packages.PackageInfoDto;
+import utez.edu.mx.orderapp.controllers.packages.dtos.ImageInfoDto;
+import utez.edu.mx.orderapp.controllers.packages.dtos.PackageDto;
+import utez.edu.mx.orderapp.controllers.packages.dtos.PackageInfoDto;
 import utez.edu.mx.orderapp.firebaseintegrations.FirebaseStorageService;
-import utez.edu.mx.orderapp.models.categories.Category;
-import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.models.packages.ImagePackage;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.repositories.packages.ImagePackageRepository;
@@ -22,7 +20,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional

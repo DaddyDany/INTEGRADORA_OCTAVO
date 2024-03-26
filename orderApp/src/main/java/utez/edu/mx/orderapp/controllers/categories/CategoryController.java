@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
