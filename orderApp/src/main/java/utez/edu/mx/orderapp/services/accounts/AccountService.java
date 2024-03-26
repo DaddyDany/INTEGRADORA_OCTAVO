@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.services;
+package utez.edu.mx.orderapp.services.accounts;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

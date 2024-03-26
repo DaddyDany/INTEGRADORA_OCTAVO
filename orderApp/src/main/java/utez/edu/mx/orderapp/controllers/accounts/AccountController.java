@@ -19,7 +19,7 @@ import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
 import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.accounts.Worker;
-import utez.edu.mx.orderapp.services.AccountService;
+import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.util.List;

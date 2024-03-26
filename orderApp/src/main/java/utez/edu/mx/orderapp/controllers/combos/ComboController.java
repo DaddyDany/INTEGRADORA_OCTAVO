@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderapp.models.combos.Combo;
 import utez.edu.mx.orderapp.models.packages.Package;
-import utez.edu.mx.orderapp.services.ComboService;
+import utez.edu.mx.orderapp.services.combos.ComboService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.util.List;

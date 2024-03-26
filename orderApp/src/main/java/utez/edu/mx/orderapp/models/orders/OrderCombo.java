@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.combos.Combo;
+import utez.edu.mx.orderapp.models.packages.Package;
 
 @Getter
 @Setter
@@ -27,4 +28,13 @@ public class OrderCombo {
     @ManyToOne
     @JoinColumn(name = "combo_id")
     private Combo combo;
+
+    public OrderCombo(Order order, Combo combo) {
+        this.order = order;
+        this.combo = combo;
+    }
+
+    public OrderCombo() {
+
+    }
 }

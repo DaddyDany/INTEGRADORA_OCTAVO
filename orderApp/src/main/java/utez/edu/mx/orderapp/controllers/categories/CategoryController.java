@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.packages.Package;
 import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
-import utez.edu.mx.orderapp.services.CategoryService;
-import utez.edu.mx.orderapp.services.PackageService;
+import utez.edu.mx.orderapp.services.categories.CategoryService;
+import utez.edu.mx.orderapp.services.packages.PackageService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.util.List;

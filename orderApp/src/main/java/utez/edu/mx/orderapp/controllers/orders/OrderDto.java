@@ -30,15 +30,7 @@ public class OrderDto {
         order.setOrderDate(this.orderDate);
         order.setOrderPlace(this.orderPlace);
         order.setOrderTime(this.orderTime);
-        // Estos valores serán establecidos en el servicio, por lo que no se incluyen aquí
-        // order.setOrderTotalPayment(...);
-        // order.setOrderTotalHours(...);
-        // order.setOrderType(...);
-        order.setCommonUser(commonUser); // El usuario se obtiene y pasa al método toOrder
-
-        // Nota: Las listas de IDs para paquetes y combos se manejarán en el servicio,
-        // no directamente en este método, ya que involucra la lógica de negocio adicional.
-
+        order.setCommonUser(commonUser);
         return order;
     }
 }

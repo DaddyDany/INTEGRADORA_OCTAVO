@@ -10,10 +10,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
+import utez.edu.mx.orderapp.models.reviews.Review;
 
 import java.sql.Time;
 import java.util.ArrayList;
@@ -65,6 +67,9 @@ public class Order {
     @JsonIgnore
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderPackage> orderPackages = new ArrayList<>();
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    private Review review;
 
     public Order() {
         // Constructor vacío necesario para JPA

@@ -4,7 +4,7 @@ package utez.edu.mx.orderapp.controllers.authentications;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import utez.edu.mx.orderapp.services.AuthService;
+import utez.edu.mx.orderapp.services.auths.AuthService;
 import utez.edu.mx.orderapp.utils.ApiResponse;
 
 @RestController

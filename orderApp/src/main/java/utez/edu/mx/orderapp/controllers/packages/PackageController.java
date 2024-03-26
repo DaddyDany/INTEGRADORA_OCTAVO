@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderapp.models.packages.Package;
-import utez.edu.mx.orderapp.services.PackageService;
+import utez.edu.mx.orderapp.services.packages.PackageService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;

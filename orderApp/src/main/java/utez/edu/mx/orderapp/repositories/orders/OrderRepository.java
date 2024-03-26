@@ -5,9 +5,9 @@ import org.springframework.stereotype.Repository;
 import utez.edu.mx.orderapp.models.orders.Order;
 
 import java.util.Date;
+import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-
-    boolean existsByOrderDate(Date orderDate);
+    List<Order> findByCommonUserCommonUserId(Long commonUserId);
 }

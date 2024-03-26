@@ -14,4 +14,5 @@ public interface CommonUserRepository extends JpaRepository<CommonUser, Long> {
     Optional<CommonUser> findByUserName(String username);
     @Query("SELECT c FROM CommonUser c WHERE c.role.roleName = :roleName")
     List<CommonUser> findAllByRoleName(@Param("roleName") String roleName);
+
 }

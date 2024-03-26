@@ -1,12 +1,13 @@
 package utez.edu.mx.orderapp.controllers.orders;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,10 +18,11 @@ import org.springframework.web.server.ResponseStatusException;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
-import utez.edu.mx.orderapp.services.OrderService;
+import utez.edu.mx.orderapp.services.orders.OrderService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -36,8 +38,8 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAll() {
-        Response<List<Order>> response = this.orderService.getAll();
+    public ResponseEntity<List<OrderInfoAdminDto>> getAll() {
+        Response<List<OrderInfoAdminDto>> response = this.orderService.getAll();
         if (response.isSuccess()){
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         }else{
@@ -85,6 +87,36 @@ public class OrderController {
         }
     }
 
+    @PatchMapping("/decline/{id}")
+    public ResponseEntity<?> declineOrder(@PathVariable Long id) {
+        try {
+            orderService.declineOrder(id);
+            return ResponseEntity.ok().body("Orden declinada con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/accept/{id}")
+    public ResponseEntity<?> acceptOrder(@PathVariable Long id) {
+        try {
+            orderService.acceptOrder(id);
+            return ResponseEntity.ok().body("Orden aceptada con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/complete/{id}")
+    public ResponseEntity<?> completeOrder(@PathVariable Long id) {
+        try {
+            orderService.completeOrder(id);
+            return ResponseEntity.ok().body("Orden completada con éxito");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Order> delete(@PathVariable("id") Long id) {
         Response<Order> response = this.orderService.deleteOrder(id);
@@ -92,6 +124,18 @@ public class OrderController {
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         }else{
             return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        }
+    }
+
+    @GetMapping("/my-orders")
+    public ResponseEntity<List<OrderResponseDto>> getMyOrders(Authentication authentication) {
+        String username = authentication.getName();
+        Optional<CommonUser> user = commonUserRepository.findByUserName(username);
+        if (user.isPresent()) {
+            List<OrderResponseDto> orders = orderService.findOrdersByUserId(user.get().getCommonUserId());
+            return ResponseEntity.ok(orders);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

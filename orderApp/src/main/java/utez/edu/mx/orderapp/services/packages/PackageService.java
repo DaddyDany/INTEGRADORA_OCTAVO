@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.services;
+package utez.edu.mx.orderapp.services.packages;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
