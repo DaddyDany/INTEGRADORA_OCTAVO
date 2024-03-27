@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface WorkerRepository extends JpaRepository<Worker, Long> {
     Optional<Worker> findByWorkerName(String username);
-
+    Optional<Worker> findByWorkerEmail(String email);
     @Query("SELECT w FROM Worker w WHERE w.role.roleName = :roleName")
     List<Worker> findAllByRoleName(@Param("roleName") String roleName);
 }

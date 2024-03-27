@@ -28,22 +28,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        CommonUser commonUser = commonUserRepository.findByUserName(username).orElse(null);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        CommonUser commonUser = commonUserRepository.findByUserEmail(email).orElse(null);
         if (commonUser != null) {
             return UserDetailsImpl.fromCommonUser(commonUser);
         }
 
-        Worker worker = workerRepository.findByWorkerName(username).orElse(null);
+        Worker worker = workerRepository.findByWorkerEmail(email).orElse(null);
         if (worker != null) {
             return UserDetailsImpl.fromWorker(worker);
         }
 
-        Administrator administrator = administratorRepository.findByAdminName(username).orElse(null);
+        Administrator administrator = administratorRepository.findByAdminEmail(email).orElse(null);
         if (administrator != null) {
             return UserDetailsImpl.fromAdministrator(administrator);
         }
 
-        throw new UsernameNotFoundException("User Not Found with username: " + username);
+        throw new UsernameNotFoundException("User Not Found with username: " + email);
     }
 }
