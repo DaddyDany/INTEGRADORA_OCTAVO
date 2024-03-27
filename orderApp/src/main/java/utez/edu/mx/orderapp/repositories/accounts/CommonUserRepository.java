@@ -12,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface CommonUserRepository extends JpaRepository<CommonUser, Long> {
     Optional<CommonUser> findByUserName(String username);
+
+    Optional<CommonUser> findByUserEmail(String email);
     @Query("SELECT c FROM CommonUser c WHERE c.role.roleName = :roleName")
     List<CommonUser> findAllByRoleName(@Param("roleName") String roleName);
 

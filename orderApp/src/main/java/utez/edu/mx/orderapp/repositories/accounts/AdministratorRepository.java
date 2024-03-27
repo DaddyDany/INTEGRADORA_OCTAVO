@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface AdministratorRepository extends JpaRepository<Administrator, Long> {
     Optional<Administrator> findByAdminName(String username);
 
+    Optional<Administrator> findByAdminEmail(String email);
+
     @Query("SELECT a FROM Administrator a WHERE a.role.roleName = :roleName")
     List<Administrator> findAllByRoleName(@Param("roleName") String roleName);
 }
