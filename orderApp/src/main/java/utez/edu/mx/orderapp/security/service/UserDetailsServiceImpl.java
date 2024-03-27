@@ -31,6 +31,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         CommonUser commonUser = commonUserRepository.findByUserEmail(email).orElse(null);
         if (commonUser != null) {
+            // Verifica el estado de la cuenta solo para CommonUser
+            if (!"Confirmada".equals(commonUser.getAccountStatus())) {
+                throw new UsernameNotFoundException("La cuenta no está confirmada para el email: " + email);
+            }
             return UserDetailsImpl.fromCommonUser(commonUser);
         }
 
@@ -44,6 +48,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             return UserDetailsImpl.fromAdministrator(administrator);
         }
 
-        throw new UsernameNotFoundException("User Not Found with username: " + email);
+        // Si ningún usuario coincide, se lanza esta excepción.
+        throw new UsernameNotFoundException("Usuario no encontrado con email: " + email);
     }
 }

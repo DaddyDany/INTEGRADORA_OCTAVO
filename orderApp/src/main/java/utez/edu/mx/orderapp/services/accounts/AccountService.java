@@ -19,9 +19,12 @@ import utez.edu.mx.orderapp.repositories.accounts.AdministratorRepository;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.repositories.accounts.RoleRepository;
 import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
+import utez.edu.mx.orderapp.services.emails.EmailService;
 import utez.edu.mx.orderapp.utils.Response;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @Transactional
@@ -31,6 +34,7 @@ public class AccountService {
     private final WorkerRepository workerRepository;
     private final AdministratorRepository administratorRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     private static final String ROLE_WORKER = "WORKER";
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_COMMON_USER = "COMMON_USER";
@@ -38,12 +42,13 @@ public class AccountService {
 
 
     @Autowired
-    public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder){
+    public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder, EmailService emailService){
         this.roleRepository = roleRepository;
         this.commonUserRepository = commonUserRepository;
         this.workerRepository = workerRepository;
         this.administratorRepository = administratorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -60,9 +65,21 @@ public class AccountService {
             Role role = roleRepository.findByRoleName(ROLE_COMMON_USER)
                     .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
             commonUser.setRole(role);
+
+            // Configura el estado inicial de la cuenta y el código de confirmación
+            commonUser.setAccountStatus("Sin confirmar");
+            String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+            commonUser.setConfirmationCode(confirmationCode);
+            // Opcional: Establecer un tiempo de expiración para el código
+            commonUser.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1)); // 24 horas para confirmar
+
             commonUser = commonUserRepository.save(commonUser);
 
-            return new Response<>(commonUser, false, 200, "La cuenta de usuario ha sido creada con éxito");
+            // Enviar el correo con el código de confirmación
+            String emailContent = "Tu código de confirmación es: " + confirmationCode;
+            emailService.sendConfirmationEmail(commonUser.getUserEmail(), "Confirmación de tu cuenta", emailContent);
+
+            return new Response<>(commonUser, false, 200, "La cuenta de usuario ha sido creada con éxito. Revisa tu correo para confirmarla.");
         } catch (RuntimeException e) {
             return new Response<>(true, 200, "Hubo un error creando la cuenta de usuario: " + e.getMessage());
         }
