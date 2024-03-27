@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.orders.Order;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -37,6 +38,15 @@ public class CommonUser {
     private String userPassword;
     @Column(name = "user_cellphone")
     private String userCellphone;
+
+    @Column(name = "account_status")
+    private String accountStatus = "Sin confirmar";
+
+    @Column(name = "confirmation_code")
+    private String confirmationCode;
+
+    @Column(name = "confirmation_code_expiry")
+    private LocalDateTime confirmationCodeExpiry;
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdministratorDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
@@ -19,9 +20,11 @@ import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
 import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.accounts.Worker;
+import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -29,15 +32,31 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AccountController {
     private final AccountService accountService;
+    private final CommonUserRepository commonUserRepository;
     @Autowired
-    public AccountController(AccountService accountService){
+    public AccountController(AccountService accountService, CommonUserRepository commonUserRepository){
         this.accountService = accountService;
+        this.commonUserRepository = commonUserRepository;
     }
     @PostMapping("/create-common")
     public ResponseEntity<CommonUser> createCommonUserAccount(@RequestBody CommonUserDto commonUserDto) {
         CommonUser createdAccount = accountService.createCommonUserAccount(commonUserDto).getData();
         Response<CommonUser> responseBody = new Response<>(createdAccount, false, HttpStatus.CREATED.value(), "Cuenta creada exitosamente");
         return new ResponseEntity<>(responseBody.getData(), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/confirm-account")
+    public ResponseEntity<?> confirmAccount(@RequestParam("token") String token) {
+        CommonUser user = commonUserRepository.findByConfirmationCode(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired confirmation token"));
+
+        if (LocalDateTime.now().isBefore(user.getConfirmationCodeExpiry())) {
+            user.setAccountStatus("Confirmada");
+            commonUserRepository.save(user);
+            return ResponseEntity.ok("Account successfully confirmed.");
+        } else {
+            return ResponseEntity.badRequest().body("Confirmation token is invalid or expired.");
+        }
     }
 
     @PostMapping("/create-admin")
