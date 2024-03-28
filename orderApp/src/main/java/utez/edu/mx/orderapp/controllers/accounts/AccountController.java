@@ -7,11 +7,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdministratorDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.CommonUserDto;
@@ -24,6 +28,7 @@ import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,10 +44,26 @@ public class AccountController {
         this.commonUserRepository = commonUserRepository;
     }
     @PostMapping("/create-common")
-    public ResponseEntity<CommonUser> createCommonUserAccount(@RequestBody CommonUserDto commonUserDto) {
-        CommonUser createdAccount = accountService.createCommonUserAccount(commonUserDto).getData();
-        Response<CommonUser> responseBody = new Response<>(createdAccount, false, HttpStatus.CREATED.value(), "Cuenta creada exitosamente");
-        return new ResponseEntity<>(responseBody.getData(), HttpStatus.CREATED);
+    public ResponseEntity<Response<Long>> createCommonUserAccount(@ModelAttribute CommonUserDto commonUserDto){
+        Response<Long> response = accountService.createCommonUserAccount(commonUserDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+    @PostMapping("/create-admin")
+    public ResponseEntity<Response<Long>> createAdminAccount(@ModelAttribute AdministratorDto administratorDto){
+        Response<Long> response = accountService.createAdministratorAccount(administratorDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PutMapping("/update/info/{userId}")
+    public ResponseEntity<Response<Long>> updateUserInfo(@PathVariable Long userId, @RequestBody CommonUserDto commonUserDto) {
+        Response<Long> response = accountService.updateCommonUserInfo(userId, commonUserDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PostMapping("/update/profile-pic/{userId}")
+    public ResponseEntity<Response<String>> updateUserProfilePic(@PathVariable Long userId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
+        Response<String> response = accountService.updateCommonUserProfilePic(userId, profilePic);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PostMapping("/confirm-account")
@@ -58,17 +79,6 @@ public class AccountController {
             return ResponseEntity.badRequest().body("Confirmation token is invalid or expired.");
         }
     }
-
-    @PostMapping("/create-admin")
-    public ResponseEntity<Administrator> createAdminAccount(@RequestBody AdministratorDto administratorDto) {
-        try{
-            Response<Administrator> createdAccount = accountService.createAdministratorAccount(administratorDto);
-            return new ResponseEntity<>(createdAccount.getData(), HttpStatus.CREATED);
-        }catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @GetMapping("/administrators")
     public ResponseEntity<List<AdminGiveInfoDto>> getAllAdministrators() {
         try {
@@ -80,16 +90,9 @@ public class AccountController {
     }
 
     @PostMapping("/create-worker")
-    public ResponseEntity<Worker> createAccount(@RequestBody WorkerDto workerDto) {
-        try{
-            Response<Worker> createdAccount = accountService.createWorkerAccount(workerDto);
-            return new ResponseEntity<>(
-                    createdAccount.getData(),
-                    HttpStatus.CREATED
-            );
-        }catch (EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Response<Long>> createAccount(@ModelAttribute WorkerDto workerDto) throws IOException {
+        Response<Long> response = accountService.createWorkerAccount(workerDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/workers")

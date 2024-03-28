@@ -14,20 +14,15 @@ import java.util.UUID;
 
 @Service
 public class FirebaseStorageService {
-    private static final String DIRECTORY_PATH = "package-images/";
-
-    public String uploadFile(MultipartFile multipartFile) throws IOException {
-        String fileName = UUID.randomUUID().toString().concat(this.getExtension(multipartFile.getOriginalFilename()));
-
-        GoogleCredentials credentials = GoogleCredentials.fromStream(
-                new ClassPathResource("orderapp-eaca6-firebase-adminsdk-qtn2q-d2105e1f00.json").getInputStream()
-        );
+    public String uploadFile(MultipartFile multipartFile, String directoryPath) throws IOException {
+        String fileName = UUID.randomUUID().toString().concat(getExtension(multipartFile.getOriginalFilename()));
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new ClassPathResource("orderapp-eaca6-firebase-adminsdk-qtn2q-d2105e1f00.json").getInputStream());
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        BlobId blobId = BlobId.of("orderapp-eaca6.appspot.com", DIRECTORY_PATH + fileName);
+        BlobId blobId = BlobId.of("orderapp-eaca6.appspot.com", directoryPath + fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(multipartFile.getContentType()).build();
         storage.create(blobInfo, multipartFile.getBytes());
         String downloadUrl = "https://firebasestorage.googleapis.com/v0/b/orderapp-eaca6.appspot.com/o/%s?alt=media";
-        return String.format(downloadUrl, URLEncoder.encode(DIRECTORY_PATH + fileName, java.nio.charset.StandardCharsets.UTF_8));
+        return String.format(downloadUrl, URLEncoder.encode(directoryPath + fileName, StandardCharsets.UTF_8));
     }
 
     private String getExtension(String fileName) {
@@ -37,12 +32,12 @@ public class FirebaseStorageService {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
-    public void deleteFileFromFirebase(String fileUrl) throws IOException {
+    public void deleteFileFromFirebase(String fileUrl, String directoryPath) throws IOException {
         try {
             String[] parts = fileUrl.split("/o/");
             String encodedFileName = parts[1].split("\\?")[0];
-            String fileName = URLDecoder.decode(encodedFileName, StandardCharsets.UTF_8.name());
-            fileName = fileName.replace("package-images%2F", DIRECTORY_PATH);
+            String fileName = URLDecoder.decode(encodedFileName, StandardCharsets.UTF_8);
+            fileName = fileName.replace("package-images%2F", directoryPath);
             GoogleCredentials credentials = GoogleCredentials.fromStream(
                     new ClassPathResource("orderapp-eaca6-firebase-adminsdk-qtn2q-d2105e1f00.json").getInputStream()
             );
@@ -56,4 +51,6 @@ public class FirebaseStorageService {
             throw new IOException("Error al eliminar el archivo de Firebase Storage", e);
         }
     }
+
+
 }

@@ -38,6 +38,8 @@ public class CommonUser {
     private String userPassword;
     @Column(name = "user_cellphone")
     private String userCellphone;
+    @Column(name = "user_profile_pic_url")
+    private String userProfilePicUrl;
 
     @Column(name = "account_status")
     private String accountStatus = "Sin confirmar";
