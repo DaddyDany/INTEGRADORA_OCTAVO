@@ -2,6 +2,7 @@ package utez.edu.mx.orderapp.controllers.accounts.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -15,4 +16,5 @@ public class WorkerDto {
     private Integer workerSecurityNumber;
     private Integer workerSalary;
     private String workerRfc;
+    private MultipartFile workerProfilePic;
 }

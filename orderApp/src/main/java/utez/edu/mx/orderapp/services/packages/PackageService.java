@@ -80,7 +80,7 @@ public class PackageService {
         Package packag = packageDto.getPackage();
         List<ImagePackage> imagePackages = new ArrayList<>();
         for (MultipartFile file : packageDto.getImages()) {
-            String imageUrl = firebaseStorageService.uploadFile(file);
+            String imageUrl = firebaseStorageService.uploadFile(file, "package-images/");
             ImagePackage imagePackage = new ImagePackage();
             imagePackage.setImageUrl(imageUrl);
             imagePackage.setAPackage(packag);
@@ -113,7 +113,7 @@ public class PackageService {
             Package packag = packageOptional.get();
             for (ImagePackage imagePackage : packag.getImagePackages()) {
                 try {
-                    firebaseStorageService.deleteFileFromFirebase(imagePackage.getImageUrl());
+                    firebaseStorageService.deleteFileFromFirebase(imagePackage.getImageUrl(), "package-images/");
                 } catch (IOException e) {
                     e.printStackTrace();
                     return new Response<>(

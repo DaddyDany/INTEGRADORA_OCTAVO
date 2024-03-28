@@ -40,6 +40,8 @@ public class Worker {
     private Integer workerSecurityNumber;
     @Column(name = "worker_salary")
     private Integer workerSalary;
+    @Column(name = "worker_profile_pic_url")
+    private String workerProfilePicUrl;
     @Column(name = "worker_rfc")
     private String workerRfc;
     @ManyToOne

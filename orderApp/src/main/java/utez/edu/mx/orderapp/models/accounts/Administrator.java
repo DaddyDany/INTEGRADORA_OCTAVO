@@ -32,6 +32,8 @@ public class Administrator {
     private String adminPassword;
     @Column(name = "admin_cellphone")
     private String adminCellphone;
+    @Column(name = "admin_profile_pic_url")
+    private String adminProfilePicUrl;
     @Column(name = "admin_security_number")
     private Integer adminSecurityNumber;
     @Column(name = "admin_salary")
