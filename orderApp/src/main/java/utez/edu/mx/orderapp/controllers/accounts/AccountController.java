@@ -48,11 +48,6 @@ public class AccountController {
         Response<Long> response = accountService.createCommonUserAccount(commonUserDto);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
-    @PostMapping("/create-admin")
-    public ResponseEntity<Response<Long>> createAdminAccount(@ModelAttribute AdministratorDto administratorDto){
-        Response<Long> response = accountService.createAdministratorAccount(administratorDto);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-    }
 
     @PutMapping("/update/info/{userId}")
     public ResponseEntity<Response<Long>> updateUserInfo(@PathVariable Long userId, @RequestBody CommonUserDto commonUserDto) {
@@ -63,6 +58,24 @@ public class AccountController {
     @PostMapping("/update/profile-pic/{userId}")
     public ResponseEntity<Response<String>> updateUserProfilePic(@PathVariable Long userId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
         Response<String> response = accountService.updateCommonUserProfilePic(userId, profilePic);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PostMapping("/create-admin")
+    public ResponseEntity<Response<Long>> createAdminAccount(@ModelAttribute AdministratorDto administratorDto){
+        Response<Long> response = accountService.createAdministratorAccount(administratorDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PutMapping("/update-admin/info/{adminId}")
+    public ResponseEntity<Response<Long>> updateAdmin(@PathVariable Long adminId, @RequestBody AdministratorDto administratorDto) {
+        Response<Long> response = accountService.updateAdminInfo(adminId, administratorDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PostMapping("/update-admin/profile-pic/{adminId}")
+    public ResponseEntity<Response<String>> updateAdminProfilePic(@PathVariable Long adminId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
+        Response<String> response = accountService.updateAdminProfilePic(adminId , profilePic);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
@@ -93,6 +106,18 @@ public class AccountController {
     public ResponseEntity<Response<Long>> createAccount(@ModelAttribute WorkerDto workerDto) throws IOException {
         Response<Long> response = accountService.createWorkerAccount(workerDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/update-worker/info/{workerId}")
+    public ResponseEntity<Response<Long>> updateWorker(@PathVariable Long workerId, @RequestBody WorkerDto workerDto) {
+        Response<Long> response = accountService.updateWorkerInfo(workerId, workerDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PostMapping("/update-worker/profile-pic/{workerId}")
+    public ResponseEntity<Response<String>> updateWorkerProfilePic(@PathVariable Long workerId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
+        Response<String> response = accountService.updateWorkerProfilePic(workerId , profilePic);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @GetMapping("/workers")

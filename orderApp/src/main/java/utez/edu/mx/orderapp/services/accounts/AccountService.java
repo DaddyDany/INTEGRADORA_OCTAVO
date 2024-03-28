@@ -158,6 +158,43 @@ public class AccountService {
         }
     }
 
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<Long> updateAdminInfo(Long adminId, AdministratorDto administratorDto) {
+        Administrator administrator = administratorRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+        administrator.setAdminCellphone(administratorDto.getAdminCellphone());
+        administrator.setAdminName(administratorDto.getAdminName());
+        administrator.setAdminFirstLastName(administratorDto.getAdminFirstLastName());
+        administrator.setAdminSecondLastName(administratorDto.getAdminSecondLastName());
+        administrator.setAdminSecurityNumber(administratorDto.getAdminSecurityNumber());
+        administrator.setAdminSalary(administratorDto.getAdminSalary());
+        administrator.setAdminEmail(administratorDto.getAdminEmail());
+        administratorRepository.save(administrator);
+        return new Response<>(administrator.getAdminId(), false, 200, "Información del administrador actualizada con éxito.");
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> updateAdminProfilePic(Long adminId, MultipartFile adminProfilePic) throws IOException {
+        Administrator administrator = administratorRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+        if (!adminProfilePic.isEmpty()) {
+            if (administrator.getAdminProfilePicUrl() != null && !administrator.getAdminProfilePicUrl().isEmpty()) {
+                try {
+                    firebaseStorageService.deleteFileFromFirebase(administrator.getAdminProfilePicUrl(), "admins-profile-pics/");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return new Response<>(true, 500, "Error al eliminar la foto de perfil anterior: " + e.getMessage());
+                }
+            }
+            String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, "admins-profile-pics/");
+            administrator.setAdminProfilePicUrl(imageUrl);
+            administratorRepository.save(administrator);
+            return new Response<>(imageUrl, false, 200, "Foto de perfil actualizada con éxito.");
+        } else {
+            return new Response<>(true, 400, "La foto de perfil no puede estar vacía.");
+        }
+    }
+
     public List<AdminGiveInfoDto> findAllAdministrators() {
         List<Administrator> administrators = administratorRepository.findAllByRoleName(ROLE_ADMIN);
         return administrators.stream().map(this::convertToAdminDto).toList();
@@ -215,6 +252,44 @@ public class AccountService {
             return new Response<>(true, 200, "Hubo un error creando la cuenta de trabajador: " + e.getMessage());
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<Long> updateWorkerInfo(Long workerId, WorkerDto workerDto) {
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+        worker.setWorkerName(workerDto.getWorkerName());
+        worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
+        worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
+        worker.setWorkerEmail(workerDto.getWorkerEmail());
+        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
+        worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
+        worker.setWorkerSalary(worker.getWorkerSalary());
+        worker.setWorkerRfc(worker.getWorkerRfc());
+        workerRepository.save(worker);
+        return new Response<>(worker.getWorkerId(), false, 200, "Información del trabajador actualizada con éxito.");
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> updateWorkerProfilePic(Long workerId, MultipartFile workerProfilePic) throws IOException {
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+        if (!workerProfilePic.isEmpty()) {
+            if (worker.getWorkerProfilePicUrl() != null && !worker.getWorkerProfilePicUrl().isEmpty()) {
+                try {
+                    firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), "workers-profile-pics/");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return new Response<>(true, 500, "Error al eliminar la foto de perfil anterior: " + e.getMessage());
+                }
+            }
+            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
+            worker.setWorkerProfilePicUrl(imageUrl);
+            workerRepository.save(worker);
+            return new Response<>(imageUrl, false, 200, "Foto de perfil actualizada con éxito.");
+        } else {
+            return new Response<>(true, 400, "La foto de perfil no puede estar vacía.");
         }
     }
 
