@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.models.categories.Category;
 
 @AllArgsConstructor
@@ -14,14 +15,14 @@ public class CategoryDto {
     private String serviceName;
     private String serviceDescription;
     private String serviceQuote;
-    private String serviceImageUrl;
-
+    private MultipartFile serviceImage;
+    private String serviceImgUrl;
     public Category getCategory(){
         return new Category(
                 getServiceName(),
                 getServiceDescription(),
                 getServiceQuote(),
-                getServiceImageUrl()
+                getServiceImgUrl()
         );
     }
 }

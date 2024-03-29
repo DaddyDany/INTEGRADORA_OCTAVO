@@ -4,10 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
+import utez.edu.mx.orderapp.firebaseintegrations.FirebaseStorageService;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
 import utez.edu.mx.orderapp.utils.Response;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +20,13 @@ import java.util.Optional;
 @Transactional
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final FirebaseStorageService firebaseStorageService;
+
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository){
+    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService){
         this.categoryRepository = categoryRepository;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
 
@@ -42,21 +48,23 @@ public class CategoryService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Category> insertCategory(Category service) {
-        if (this.categoryRepository.existsByServiceName(service.getServiceName()))
-            return new Response<>(
-                    null,
-                    true,
-                    200,
-                    "Ya existe este servicio"
-            );
-        service.setServiceState(false);
-        return new Response<>(
-                this.categoryRepository.saveAndFlush(service),
-                false,
-                200,
-                "Servicio registrado correctamente"
-        );
+    public Response<Long> insertCategory(CategoryDto categoryDto) {
+       try{
+           Category category = new Category();
+           category.setServiceName(categoryDto.getServiceName());
+           category.setServiceDescription(categoryDto.getServiceDescription());
+           category.setServiceQuote(categoryDto.getServiceQuote());
+           if (categoryDto.getServiceImage() != null && !categoryDto.getServiceImage().isEmpty()){
+               String imageUrl = firebaseStorageService.uploadFile(categoryDto.getServiceImage(), "services-pics/");
+               category.setServiceImageUrl(imageUrl);
+           }
+           category = categoryRepository.save(category);
+           return new Response<>(category.getServiceId(), false, 200, "El servicio ha sido agregado con exito");
+       }catch (RuntimeException e) {
+           return new Response<>(true, 200, "Hubo un error registrando el servicio: " + e.getMessage());
+       } catch (IOException e) {
+           throw new RuntimeException(e);
+       }
     }
 
     @Transactional(rollbackFor = {SQLException.class})

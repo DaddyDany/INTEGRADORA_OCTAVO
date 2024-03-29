@@ -103,7 +103,7 @@ public class AccountController {
     }
 
     @PostMapping("/create-worker")
-    public ResponseEntity<Response<Long>> createAccount(@ModelAttribute WorkerDto workerDto) throws IOException {
+    public ResponseEntity<Response<Long>> createWorkerAccount(@ModelAttribute WorkerDto workerDto) {
         Response<Long> response = accountService.createWorkerAccount(workerDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
