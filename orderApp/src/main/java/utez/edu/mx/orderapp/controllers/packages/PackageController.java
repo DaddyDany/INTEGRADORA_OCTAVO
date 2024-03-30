@@ -77,17 +77,16 @@ public class PackageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Package> update(@PathVariable("id") Long id, @RequestBody PackageDto packageDto) {
-        Package packag = packageDto.getPackage();
-        packag.setPackageId(id);
-        Response<Package> response = this.packageService.updatePackage(packag);
-        if (response.isSuccess()){
+    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody PackageDto packageDto) {
+        Response<Package> response = packageService.updatePackage(id, packageDto);
+        if (!response.isSuccess()) {
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.valueOf(response.getStatus()))
+                    .body(response.getMessage());
         }
     }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Package> delete(@PathVariable("id") Long id) {
         Response<Package> response = this.packageService.deletePackage(id);

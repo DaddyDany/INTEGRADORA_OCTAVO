@@ -74,10 +74,8 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable("id") Long id, @RequestBody CategoryDto service){
-        Category category = service.getCategory();
-        category.setServiceId(id);
-        Response<Category> response = this.categoryService.updateCategory(category);
+    public ResponseEntity<Category> update(@PathVariable("id") Long id, @RequestBody CategoryDto serviceDto){
+        Response<Category> response = this.categoryService.updateCategory(id, serviceDto);
         if (response.isSuccess()){
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         } else {

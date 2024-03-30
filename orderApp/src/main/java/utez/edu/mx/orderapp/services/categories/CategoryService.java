@@ -68,20 +68,24 @@ public class CategoryService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Category> updateCategory(Category service) {
-        if (this.categoryRepository.existsById(service.getServiceId()))
-            return new Response<>(
-                    this.categoryRepository.saveAndFlush(service),
-                    false,
-                    200,
-                    "Servicio actualizado correctamente"
-            );
-        return new Response<>(
-                null,
-                true,
-                200,
-                "No existe el servicio buscado"
-        );
+    public Response<Category> updateCategory(Long id, CategoryDto categoryDto) {
+        Optional<Category> existingCategoryOptional = this.categoryRepository.findById(id);
+        if (existingCategoryOptional.isPresent()) {
+            Category existingCategory = existingCategoryOptional.get();
+            if (categoryDto.getServiceName() != null) {
+                existingCategory.setServiceName(categoryDto.getServiceName());
+            }
+            if (categoryDto.getServiceDescription() != null) {
+                existingCategory.setServiceDescription(categoryDto.getServiceDescription());
+            }
+            if (categoryDto.getServiceQuote() != null) {
+                existingCategory.setServiceQuote(categoryDto.getServiceQuote());
+            }
+            Category updatedCategory = this.categoryRepository.save(existingCategory);
+            return new Response<>(updatedCategory, false, 200, "Servicio actualizado correctamente");
+        } else {
+            return new Response<>(null, true, 404, "No existe el servicio buscado");
+        }
     }
 
     @Transactional(rollbackFor = {SQLException.class})

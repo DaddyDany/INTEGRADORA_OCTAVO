@@ -265,8 +265,8 @@ public class AccountService {
         worker.setWorkerEmail(workerDto.getWorkerEmail());
         worker.setWorkerCellphone(workerDto.getWorkerCellphone());
         worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
-        worker.setWorkerSalary(worker.getWorkerSalary());
-        worker.setWorkerRfc(worker.getWorkerRfc());
+        worker.setWorkerSalary(workerDto.getWorkerSalary());
+        worker.setWorkerRfc(workerDto.getWorkerRfc());
         workerRepository.save(worker);
         return new Response<>(worker.getWorkerId(), false, 200, "Información del trabajador actualizada con éxito.");
     }

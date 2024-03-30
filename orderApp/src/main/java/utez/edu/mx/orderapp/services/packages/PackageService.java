@@ -1,5 +1,6 @@
 package utez.edu.mx.orderapp.services.packages;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,8 +10,10 @@ import utez.edu.mx.orderapp.controllers.packages.dtos.ImageInfoDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.PackageDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.PackageInfoDto;
 import utez.edu.mx.orderapp.firebaseintegrations.FirebaseStorageService;
+import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.packages.ImagePackage;
 import utez.edu.mx.orderapp.models.packages.Package;
+import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
 import utez.edu.mx.orderapp.repositories.packages.ImagePackageRepository;
 import utez.edu.mx.orderapp.repositories.packages.PackageRepository;
 import utez.edu.mx.orderapp.utils.Response;
@@ -26,13 +29,15 @@ import java.util.Optional;
 public class PackageService {
     private final PackageRepository packageRepository;
     private final ImagePackageRepository imagePackageRepository;
+    private final CategoryRepository categoryRepository;
     private final FirebaseStorageService firebaseStorageService;
 
     @Autowired
-    public PackageService(PackageRepository packageRepository, ImagePackageRepository imagePackageRepository, FirebaseStorageService firebaseStorageService){
+    public PackageService(PackageRepository packageRepository, ImagePackageRepository imagePackageRepository, FirebaseStorageService firebaseStorageService, CategoryRepository categoryRepository){
         this.packageRepository = packageRepository;
         this.imagePackageRepository = imagePackageRepository;
         this.firebaseStorageService = firebaseStorageService;
+        this.categoryRepository = categoryRepository;
     }
 
     @Transactional(readOnly = true)
@@ -75,9 +80,18 @@ public class PackageService {
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<Package> insertPackage(PackageDto packageDto) throws IOException {
-        if (this.packageRepository.existsByPackageName(packageDto.getPackageName()))
+        if (this.packageRepository.existsByPackageName(packageDto.getPackageName())) {
             return new Response<>(null, true, 200, "Ya existe este paquete");
-        Package packag = packageDto.getPackage();
+        }
+        Category category = categoryRepository.findById(packageDto.getCategoryId())
+                .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada con ID: " + packageDto.getCategoryId()));
+        Package packag = new Package();
+        packag.setPackageName(packageDto.getPackageName());
+        packag.setPackageDescription(packageDto.getPackageDescription());
+        packag.setPackagePrice(packageDto.getPackagePrice());
+        packag.setDesignatedHours(packageDto.getDesignatedHours());
+        packag.setWorkersNumber(packageDto.getWorkersNumber());
+        packag.setCategory(category);
         List<ImagePackage> imagePackages = new ArrayList<>();
         for (MultipartFile file : packageDto.getImages()) {
             String imageUrl = firebaseStorageService.uploadFile(file, "package-images/");
@@ -87,24 +101,27 @@ public class PackageService {
             imagePackages.add(imagePackage);
         }
         packag = this.packageRepository.saveAndFlush(packag);
+        Package finalPackage = packag;
+        imagePackages.forEach(imagePackage -> imagePackage.setAPackage(finalPackage));
         imagePackageRepository.saveAll(imagePackages);
+
         return new Response<>(packag, false, 200, "Paquete registrado correctamente, con imágenes");
     }
+
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Package> updatePackage(Package packag) {
-        if (this.packageRepository.existsById(packag.getPackageId()))
-            return new Response<>(
-                    this.packageRepository.saveAndFlush(packag),
-                    false,
-                    200,
-                    "Paquete actualizado correctamente"
-            );
-        return new Response<>(
-                null,
-                true,
-                200,
-                "No existe el paquete buscado"
-        );
+    public Response<Package> updatePackage(Long id, PackageDto packageDto) {
+        Category category = categoryRepository.findById(packageDto.getCategoryId())
+                .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada con ID: " + packageDto.getCategoryId()));
+        Package existingPackage = packageRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Paquete no encontrado con ID: " + id));
+        existingPackage.setPackageName(packageDto.getPackageName());
+        existingPackage.setPackageDescription(packageDto.getPackageDescription());
+        existingPackage.setPackagePrice(packageDto.getPackagePrice());
+        existingPackage.setDesignatedHours(packageDto.getDesignatedHours());
+        existingPackage.setWorkersNumber(packageDto.getWorkersNumber());
+        existingPackage.setCategory(category);
+        packageRepository.save(existingPackage);
+        return new Response<>(existingPackage, false, HttpStatus.OK.value(), "Paquete actualizado correctamente");
     }
     @Transactional(rollbackFor = {SQLException.class})
     public Response<Package> deletePackage(Long id) {

@@ -14,7 +14,7 @@ public class WorkerDto {
     private String workerPassword;
     private String workerCellphone;
     private Integer workerSecurityNumber;
-    private Integer workerSalary;
+    private Float workerSalary;
     private String workerRfc;
     private MultipartFile workerProfilePic;
 }

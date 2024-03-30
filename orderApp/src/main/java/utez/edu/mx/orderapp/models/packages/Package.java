@@ -63,4 +63,5 @@ public class Package {
         this.workersNumber = workersNumber;
         this.category = category;
     }
+
 }

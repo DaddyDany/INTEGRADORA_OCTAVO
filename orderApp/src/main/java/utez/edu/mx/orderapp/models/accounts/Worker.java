@@ -39,7 +39,7 @@ public class Worker {
     @Column(name = "worker_security_number")
     private Integer workerSecurityNumber;
     @Column(name = "worker_salary")
-    private Integer workerSalary;
+    private Float workerSalary;
     @Column(name = "worker_profile_pic_url")
     private String workerProfilePicUrl;
     @Column(name = "worker_rfc")
@@ -47,7 +47,6 @@ public class Worker {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
-
     @OneToMany(mappedBy = "worker")
     private Set<WorkerOrder> workerOrders;
 }

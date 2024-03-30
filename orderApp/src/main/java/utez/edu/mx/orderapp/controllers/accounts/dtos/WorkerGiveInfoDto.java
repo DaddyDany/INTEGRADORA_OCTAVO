@@ -15,6 +15,8 @@ public class WorkerGiveInfoDto {
     private String workerRfc;
     private String workerCellphone;
     private Integer workerSecurityNumber;
+    private Float workerSalary;
+    private String workerProfilePicUrl;
 
     public WorkerGiveInfoDto(Worker worker) {
         this.workerId = worker.getWorkerId();
@@ -25,5 +27,7 @@ public class WorkerGiveInfoDto {
         this.workerRfc = worker.getWorkerRfc();
         this.workerCellphone = worker.getWorkerCellphone();
         this.workerSecurityNumber = worker.getWorkerSecurityNumber();
+        this.workerSalary = worker.getWorkerSalary();
+        this.workerProfilePicUrl = worker.getWorkerProfilePicUrl();
     }
 }

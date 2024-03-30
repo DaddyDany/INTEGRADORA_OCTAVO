@@ -20,16 +20,6 @@ public class PackageDto {
     private Float packagePrice;
     private Integer designatedHours;
     private Integer workersNumber;
-    private Category category;
+    private Long categoryId;
     private List<MultipartFile> images;
-    public Package getPackage(){
-        return new Package(
-                getPackageName(),
-                getPackageDescription(),
-                getPackagePrice(),
-                getDesignatedHours(),
-                getWorkersNumber(),
-                getCategory()
-        );
-    }
 }

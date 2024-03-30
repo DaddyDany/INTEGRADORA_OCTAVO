@@ -14,6 +14,9 @@ public class AdminGiveInfoDto {
     private String adminEmail;
     private String adminCellphone;
     private String adminSecurityNumber;
+    private String adminProfilePicUrl;
+    private Integer adminSalary;
+
 
     public AdminGiveInfoDto(Administrator administrator) {
         this.adminId = administrator.getAdminId();
@@ -23,5 +26,7 @@ public class AdminGiveInfoDto {
         this.adminEmail = administrator.getAdminEmail();
         this.adminCellphone = administrator.getAdminCellphone();
         this.adminSecurityNumber = administrator.getAdminSecurityNumber().toString();
+        this.adminProfilePicUrl = administrator.getAdminProfilePicUrl();
+        this.adminSalary = administrator.getAdminSalary();
     }
 }

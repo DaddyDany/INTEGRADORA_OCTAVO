@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -51,24 +52,20 @@ public class ComboController {
     }
 
     @PostMapping
-    public ResponseEntity<Combo> insert(@Valid @RequestBody ComboDto comboDto) {
-        Response<Combo> response = this.comboService.insertCombo(comboDto);
-        if (response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.CREATED);
-        }else{
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
+    public ResponseEntity<Response<Long>> insertCombo(@ModelAttribute ComboDto comboDto) {
+        Response<Long> response = this.comboService.insertCombo(comboDto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Combo> update(@PathVariable("id") Long id, @RequestBody ComboDto comboDto) {
-        Combo combo = comboDto.getCombo();
-        combo.setComboId(id);
-        Response<Combo> response = this.comboService.updateCombo(combo);
-        if (response.isSuccess()) {
+    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody ComboDto comboDto) {
+        Response<Combo> response = comboService.updateCombo(id, comboDto);
+        if (!response.isSuccess()) {
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+            return ResponseEntity
+                    .status(HttpStatus.valueOf(response.getStatus()))
+                    .body(response.getMessage());
         }
     }
 

@@ -45,12 +45,4 @@ public class Combo {
     @JsonIgnore
     @OneToMany(mappedBy = "combo",  cascade = CascadeType.ALL)
     private List<PackageCombo> packageCombos;
-    public Combo(String comboName, String comboDescription, String comboImgUrl, Float comboPrice, Integer comboDesignatedHours, Integer comboWorkersNumber) {
-        this.comboName = comboName;
-        this.comboDescription = comboDescription;
-        this.comboImgUrl = comboImgUrl;
-        this.comboPrice = comboPrice;
-        this.comboDesignatedHours = comboDesignatedHours;
-        this.comboWorkersNumber = comboWorkersNumber;
-    }
 }
