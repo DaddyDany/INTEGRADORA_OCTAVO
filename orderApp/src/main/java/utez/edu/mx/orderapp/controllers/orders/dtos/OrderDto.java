@@ -11,6 +11,7 @@ import utez.edu.mx.orderapp.models.orders.OrderPackage;
 
 import java.sql.Time;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,8 +24,8 @@ public class OrderDto {
     private String orderPlace;
     private LocalDateTime orderTime;
     private Long commonUserId;
-    private List<Long> packagesIds;
-    private List<Long> combosIds;
+    private List<Long> packagesIds = new ArrayList<>();
+    private List<Long> combosIds = new ArrayList<>();
 
     public Order toOrder(CommonUser commonUser) {
         Order order = new Order();

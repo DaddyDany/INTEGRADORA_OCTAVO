@@ -11,9 +11,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class UserDetailsImpl implements UserDetails {
-    private String username;
-    private String password;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final String username;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
     private boolean enabled = true;
 
     private UserDetailsImpl(String username, String password, Collection<? extends GrantedAuthority> authorities) {
@@ -24,17 +24,17 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl fromCommonUser(CommonUser user) {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getRoleName());
-        return new UserDetailsImpl(user.getUserName(), user.getUserPassword(), Collections.singletonList(authority));
+        return new UserDetailsImpl(user.getUserEmail(), user.getUserPassword(), Collections.singletonList(authority));
     }
 
     public static UserDetailsImpl fromWorker(Worker user) {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getRoleName());
-        return new UserDetailsImpl(user.getWorkerName(), user.getWorkerPassword(), Collections.singletonList(authority));
+        return new UserDetailsImpl(user.getWorkerEmail(), user.getWorkerPassword(), Collections.singletonList(authority));
     }
 
     public static UserDetailsImpl fromAdministrator(Administrator user) {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getRoleName());
-        return new UserDetailsImpl(user.getAdminName(), user.getAdminPassword(), Collections.singletonList(authority));
+        return new UserDetailsImpl(user.getAdminEmail(), user.getAdminPassword(), Collections.singletonList(authority));
     }
 
     @Override
