@@ -62,7 +62,15 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createOrder(@RequestBody OrderDto orderDto) {
+    public ResponseEntity<Object> createOrder(@RequestBody OrderDto orderDto, Authentication authentication) {
+        String username = authentication.getName();
+        System.out.println(username);
+        CommonUser commonUser = commonUserRepository.findByUserEmail(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Long userId = commonUser.getCommonUserId();
+
+        orderDto.setCommonUserId(userId); // Asumiendo que has añadido un setter para commonUserId en tu DTO
         Response<OrderResponseDto> response = orderService.createOrder(orderDto);
 
         if (!response.isError()) {
