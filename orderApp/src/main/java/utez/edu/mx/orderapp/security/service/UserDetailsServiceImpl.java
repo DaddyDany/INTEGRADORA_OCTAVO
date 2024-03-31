@@ -31,24 +31,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         CommonUser commonUser = commonUserRepository.findByUserEmail(email).orElse(null);
         if (commonUser != null) {
-            // Verifica el estado de la cuenta solo para CommonUser
             if (!"Confirmada".equals(commonUser.getAccountStatus())) {
                 throw new UsernameNotFoundException("La cuenta no está confirmada para el email: " + email);
             }
             return UserDetailsImpl.fromCommonUser(commonUser);
         }
-
         Worker worker = workerRepository.findByWorkerEmail(email).orElse(null);
         if (worker != null) {
             return UserDetailsImpl.fromWorker(worker);
         }
-
         Administrator administrator = administratorRepository.findByAdminEmail(email).orElse(null);
         if (administrator != null) {
             return UserDetailsImpl.fromAdministrator(administrator);
         }
-
-        // Si ningún usuario coincide, se lanza esta excepción.
         throw new UsernameNotFoundException("Usuario no encontrado con email: " + email);
     }
 }

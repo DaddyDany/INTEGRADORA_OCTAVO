@@ -296,17 +296,17 @@ public class AccountService {
     public Object getLoggedUserProfile(String username, String role) {
         switch (role) {
             case ROLE_ADMIN -> {
-                Administrator admin = administratorRepository.findByAdminName(username)
+                Administrator admin = administratorRepository.findByAdminEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Admin no encontrado"));
                 return new AdminGiveInfoDto(admin);
             }
             case ROLE_WORKER -> {
-                Worker worker = workerRepository.findByWorkerName(username)
+                Worker worker = workerRepository.findByWorkerEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
                 return new WorkerGiveInfoDto(worker);
             }
             case ROLE_COMMON_USER -> {
-                CommonUser commonUser = commonUserRepository.findByUserName(username)
+                CommonUser commonUser = commonUserRepository.findByUserEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuario común no encontrado"));
                 return new CommonUserGiveInfoDto(commonUser);
             }
