@@ -1,5 +1,6 @@
 package utez.edu.mx.orderapp.services.accounts;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +23,7 @@ import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.repositories.accounts.RoleRepository;
 import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.services.emails.EmailService;
+import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;
@@ -40,6 +42,9 @@ public class AccountService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final FirebaseStorageService firebaseStorageService;
+    private final EncryptionService encryptionService;
+    private final ObjectMapper objectMapper; // Inyecta ObjectMapper
+
     private static final String ROLE_WORKER = "WORKER";
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_COMMON_USER = "COMMON_USER";
@@ -47,7 +52,7 @@ public class AccountService {
 
 
     @Autowired
-    public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder, EmailService emailService, FirebaseStorageService firebaseStorageService){
+    public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder, EmailService emailService, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper){
         this.roleRepository = roleRepository;
         this.commonUserRepository = commonUserRepository;
         this.workerRepository = workerRepository;
@@ -55,6 +60,8 @@ public class AccountService {
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.firebaseStorageService = firebaseStorageService;
+        this.encryptionService = encryptionService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -224,35 +231,32 @@ public class AccountService {
         dto.setWorkerRfc(worker.getWorkerRfc());
         return dto;
     }
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> createWorkerAccount(WorkerDto workerDto) {
-        try {
-            Worker worker = new Worker();
-            worker.setWorkerCellphone(workerDto.getWorkerCellphone());
-            worker.setWorkerEmail(workerDto.getWorkerEmail());
-            worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
-            worker.setWorkerName(workerDto.getWorkerName());
-            worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
-            worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
-            worker.setWorkerSalary(workerDto.getWorkerSalary());
-            worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
-            worker.setWorkerRfc(workerDto.getWorkerRfc());
-
-            if (workerDto.getWorkerProfilePic() != null && !workerDto.getWorkerProfilePic().isEmpty()) {
-                String imageUrl = firebaseStorageService.uploadFile(workerDto.getWorkerProfilePic(), "workers-profile-pics/");
-                worker.setWorkerProfilePicUrl(imageUrl);
-            }
-
-            Role role = roleRepository.findByRoleName(ROLE_WORKER)
-                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
-            worker.setRole(role);
-            worker = workerRepository.save(worker);
-            return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
-        }catch (RuntimeException e) {
-            return new Response<>(true, 200, "Hubo un error creando la cuenta de trabajador: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    @Transactional(rollbackFor = {Exception.class})
+    public Response<Long> createWorkerAccount(String encryptedData, MultipartFile workerProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
+        if (workerDto.getWorkerPassword() == null) {
+            throw new RuntimeException("La contraseña desencriptada es nula.");
         }
+        Worker worker = new Worker();
+        worker.setWorkerName(workerDto.getWorkerName());
+        worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
+        worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
+        worker.setWorkerEmail(workerDto.getWorkerEmail());
+        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
+        worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
+        worker.setWorkerSalary(workerDto.getWorkerSalary());
+        worker.setWorkerRfc(workerDto.getWorkerRfc());
+        worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
+        if (workerProfilePic != null && !workerProfilePic.isEmpty()) {
+            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
+            worker.setWorkerProfilePicUrl(imageUrl);
+        }
+        Role role = roleRepository.findByRoleName(ROLE_WORKER)
+                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
+        worker.setRole(role);
+        worker = workerRepository.save(worker);
+        return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
     }
 
     @Transactional(rollbackFor = {SQLException.class})

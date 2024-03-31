@@ -1,6 +1,6 @@
 package utez.edu.mx.orderapp.controllers.accounts;
 
-import jakarta.persistence.EntityNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdministratorDto;
@@ -21,9 +22,7 @@ import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.CommonUserDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
-import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
-import utez.edu.mx.orderapp.models.accounts.Worker;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
@@ -103,8 +102,10 @@ public class AccountController {
     }
 
     @PostMapping("/create-worker")
-    public ResponseEntity<Response<Long>> createWorkerAccount(@ModelAttribute WorkerDto workerDto) {
-        Response<Long> response = accountService.createWorkerAccount(workerDto);
+    public ResponseEntity<Response<Long>> createWorkerAccount(
+            @RequestPart("data") String encryptedData,
+            @RequestParam(value = "workerProfilePic", required = false) MultipartFile workerProfilePic) throws Exception {
+        Response<Long> response = accountService.createWorkerAccount(encryptedData, workerProfilePic);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
