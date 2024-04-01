@@ -27,7 +27,7 @@ import utez.edu.mx.orderapp.security.service.UserDetailsServiceImpl;
 public class MainSecurity {
     private final String[] whiteList = {
             "/api/auth/**",
-//            "/api/accounts/**",
+            "/api/accounts/**",
             "/api/services/**",
             "/api/packages/**",
             "/api/combos/**",
@@ -71,18 +71,18 @@ public class MainSecurity {
                         req.requestMatchers(whiteList).permitAll()
 
                                 //ACCOUNTS CONTROLLER ROUTES
-                                .requestMatchers("/api/accounts/workers").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/create-worker").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/create-admin").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/update-admin/info/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/update-admin/profile-pic/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/administrators").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/update-worker/info/**").hasAuthority("ADMIN")
-                                .requestMatchers("/api/accounts/create-common").permitAll()
-                                .requestMatchers("/api/accounts/update/info/**").hasAuthority("COMMON_USER")
-                                .requestMatchers("/api/accounts/update/profile-pic/**").hasAuthority("COMMON_USER")
-                                .requestMatchers("/api/accounts/confirm-account").permitAll()
-                                .requestMatchers("/api/accounts/profile").hasAnyAuthority("ADMIN", "COMMON_USER", "WORKER")
+//                                .requestMatchers("/api/accounts/workers").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/create-worker").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/create-admin").permitAll()
+//                                .requestMatchers("/api/accounts/update-admin/info/**").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/update-admin/profile-pic/**").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/administrators").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/update-worker/info/**").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/create-common").permitAll()
+//                                .requestMatchers("/api/accounts/update/info/**").hasAuthority("COMMON_USER")
+//                                .requestMatchers("/api/accounts/update/profile-pic/**").hasAuthority("COMMON_USER")
+//                                .requestMatchers("/api/accounts/confirm-account").permitAll()
+//                                .requestMatchers("/api/accounts/profile").hasAnyAuthority("ADMIN", "COMMON_USER", "WORKER")
                                 //ACCOUNTS CONTROLLER ROUTES
 
                                 .anyRequest().authenticated()
