@@ -48,7 +48,7 @@ public class Package {
     @OneToMany(mappedBy = "aPackage")
     private List<OrderPackage> orderPackages;
     @JsonIgnore
-    @OneToMany(mappedBy = "aPackage")
+    @OneToMany(mappedBy = "aPackage", cascade = CascadeType.ALL)
     private List<PackageCombo> packageCombos;
     @JsonIgnore
     @OneToMany(mappedBy = "aPackage", cascade = CascadeType.ALL)

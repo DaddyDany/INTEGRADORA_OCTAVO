@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -216,21 +217,39 @@ public class AccountService {
         return dto;
     }
 
+    @Transactional(readOnly = true)
     public List<WorkerGiveInfoDto> findAllWorkers() {
         List<Worker> workers = workerRepository.findAllByRoleName(ROLE_WORKER);
-        return workers.stream().map(this::convertToWorkerDto).toList();
+        return workers.stream()
+                .map(worker -> {
+                    try {
+                        return convertToWorkerDto(worker);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
-    private WorkerGiveInfoDto convertToWorkerDto(Worker worker) {
+    private WorkerGiveInfoDto convertToWorkerDto(Worker worker) throws Exception {
         WorkerGiveInfoDto dto = new WorkerGiveInfoDto(worker);
-        dto.setWorkerName(worker.getWorkerName());
-        dto.setWorkerFirstLastName(worker.getWorkerFirstLastName());
-        dto.setWorkerSecondLastName(worker.getWorkerSecondLastName());
-        dto.setWorkerCellphone(worker.getWorkerCellphone());
-        dto.setWorkerEmail(worker.getWorkerEmail());
-        dto.setWorkerRfc(worker.getWorkerRfc());
+        String encryptedId = encryptionService.encrypt(String.valueOf(worker.getWorkerId()));
+        dto.setWorkerId(encryptedId);
+        dto.setWorkerName(encryptionService.encrypt(worker.getWorkerName()));
+        dto.setWorkerFirstLastName(encryptionService.encrypt( worker.getWorkerFirstLastName()));
+        dto.setWorkerSecondLastName(encryptionService.encrypt(worker.getWorkerSecondLastName()));
+        dto.setWorkerCellphone(encryptionService.encrypt(worker.getWorkerCellphone()));
+        dto.setWorkerEmail(encryptionService.encrypt(worker.getWorkerEmail()));
+        dto.setWorkerRfc(encryptionService.encrypt(worker.getWorkerRfc()));
+        String encryptedSalary = encryptionService.encrypt(String.valueOf(worker.getWorkerSalary()));
+        dto.setWorkerSalary(encryptedSalary);
+        String encryptedSecurityNumber = encryptionService.encrypt(String.valueOf(worker.getWorkerSecurityNumber()));
+        dto.setWorkerSecurityNumber(encryptedSecurityNumber);
+        dto.setWorkerProfilePicUrl(encryptionService.encrypt(worker.getWorkerProfilePicUrl()));
         return dto;
     }
+
     @Transactional(rollbackFor = {Exception.class})
     public Response<Long> createWorkerAccount(String encryptedData, MultipartFile workerProfilePic) throws Exception {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
@@ -239,11 +258,11 @@ public class AccountService {
             throw new RuntimeException("La contraseña desencriptada es nula.");
         }
         Worker worker = new Worker();
+        worker.setWorkerEmail(workerDto.getWorkerEmail());
         worker.setWorkerName(workerDto.getWorkerName());
+        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
         worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
         worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
-        worker.setWorkerEmail(workerDto.getWorkerEmail());
-        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
         worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
         worker.setWorkerSalary(workerDto.getWorkerSalary());
         worker.setWorkerRfc(workerDto.getWorkerRfc());
@@ -260,13 +279,17 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> updateWorkerInfo(Long workerId, WorkerDto workerDto) {
+    public Response<Long> updateWorkerInfo(Long workerId, String encryptedData) throws Exception {
+        System.out.println("Before Decryption: " + encryptedData);
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        System.out.println(decryptedDataJson);
+        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
+
         Worker worker = workerRepository.findById(workerId)
                 .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
         worker.setWorkerName(workerDto.getWorkerName());
         worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
         worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
-        worker.setWorkerEmail(workerDto.getWorkerEmail());
         worker.setWorkerCellphone(workerDto.getWorkerCellphone());
         worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
         worker.setWorkerSalary(workerDto.getWorkerSalary());

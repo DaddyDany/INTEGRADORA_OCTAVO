@@ -1,6 +1,4 @@
 package utez.edu.mx.orderapp.controllers.accounts;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,8 +108,8 @@ public class AccountController {
     }
 
     @PutMapping("/update-worker/info/{workerId}")
-    public ResponseEntity<Response<Long>> updateWorker(@PathVariable Long workerId, @RequestBody WorkerDto workerDto) {
-        Response<Long> response = accountService.updateWorkerInfo(workerId, workerDto);
+    public ResponseEntity<Response<Long>> updateWorker(@PathVariable Long workerId, @RequestPart("data") String encryptedData) throws Exception{
+        Response<Long> response = accountService.updateWorkerInfo(workerId, encryptedData);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
