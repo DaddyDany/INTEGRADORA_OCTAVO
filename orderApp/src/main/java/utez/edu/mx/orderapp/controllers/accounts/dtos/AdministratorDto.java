@@ -13,7 +13,7 @@ public class AdministratorDto {
     private String adminEmail;
     private String adminPassword;
     private String adminCellphone;
-    private Integer adminSecurityNumber;
+    private String adminSecurityNumber;
     private Integer adminSalary;
     private MultipartFile adminProfilePic;
 

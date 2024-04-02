@@ -35,7 +35,7 @@ public class Administrator {
     @Column(name = "admin_profile_pic_url")
     private String adminProfilePicUrl;
     @Column(name = "admin_security_number")
-    private Integer adminSecurityNumber;
+    private String adminSecurityNumber;
     @Column(name = "admin_salary")
     private Integer adminSalary;
     @ManyToOne

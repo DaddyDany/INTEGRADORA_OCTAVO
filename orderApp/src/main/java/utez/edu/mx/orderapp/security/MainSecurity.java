@@ -69,8 +69,22 @@ public class MainSecurity {
         http.cors(Customizer.withDefaults()).csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(whiteList).permitAll()
-//                                .requestMatchers("/api/user/**").hasAuthority("ADMIN_ROLE")
-//                                .requestMatchers("/api/person/**").hasAnyAuthority("ADMIN_ROLE", "USER_ROLE")
+
+                                //ACCOUNTS CONTROLLER ROUTES
+//                                .requestMatchers("/api/accounts/workers").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/create-worker").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/create-admin").permitAll()
+//                                .requestMatchers("/api/accounts/update-admin/info/**").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/update-admin/profile-pic/**").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/administrators").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/update-worker/info/**").hasAuthority("ADMIN")
+//                                .requestMatchers("/api/accounts/create-common").permitAll()
+//                                .requestMatchers("/api/accounts/update/info/**").hasAuthority("COMMON_USER")
+//                                .requestMatchers("/api/accounts/update/profile-pic/**").hasAuthority("COMMON_USER")
+//                                .requestMatchers("/api/accounts/confirm-account").permitAll()
+//                                .requestMatchers("/api/accounts/profile").hasAnyAuthority("ADMIN", "COMMON_USER", "WORKER")
+                                //ACCOUNTS CONTROLLER ROUTES
+
                                 .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
