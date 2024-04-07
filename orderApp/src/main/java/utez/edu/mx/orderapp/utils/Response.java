@@ -23,4 +23,8 @@ public class Response<T> {
     public boolean isSuccess() {
         return !error;
     }
+
+    public int getCode() {
+        return status;
+    }
 }

@@ -3,7 +3,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +22,9 @@ import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.CommonUserDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
+import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
+import utez.edu.mx.orderapp.repositories.accounts.AdministratorRepository;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
@@ -35,10 +39,13 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
     private final CommonUserRepository commonUserRepository;
+
+    private final AdministratorRepository administratorRepository;
     @Autowired
-    public AccountController(AccountService accountService, CommonUserRepository commonUserRepository){
+    public AccountController(AccountService accountService, CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository){
         this.accountService = accountService;
         this.commonUserRepository = commonUserRepository;
+        this.administratorRepository = administratorRepository;
     }
     @PostMapping("/create-common")
     public ResponseEntity<Response<Long>> createCommonUserAccount(@ModelAttribute CommonUserDto commonUserDto){
@@ -59,14 +66,20 @@ public class AccountController {
     }
 
     @PostMapping("/create-admin")
-    public ResponseEntity<Response<Long>> createAdminAccount(@ModelAttribute AdministratorDto administratorDto){
-        Response<Long> response = accountService.createAdministratorAccount(administratorDto);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    public ResponseEntity<Response<String>> createAdminAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "adminProfilePic", required = false) MultipartFile adminProfilePic) throws Exception{
+        Response<String> response = accountService.createAdministratorAccount(encryptedData, adminProfilePic);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update-admin/info/{adminId}")
-    public ResponseEntity<Response<Long>> updateAdmin(@PathVariable Long adminId, @RequestBody AdministratorDto administratorDto) {
-        Response<Long> response = accountService.updateAdminInfo(adminId, administratorDto);
+    @DeleteMapping("/delete-admin")
+    public ResponseEntity<Response<String>> deleteAdminAccount(@RequestBody String encryptedData) throws Exception{
+        Response<String> response = accountService.deleteAdmin(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PutMapping("/update-admin")
+    public ResponseEntity<Response<String>> updateAdmin(@RequestPart("data") String encryptedData) throws Exception {
+        Response<String> response = accountService.updateAdminInfo(encryptedData);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
@@ -77,7 +90,7 @@ public class AccountController {
     }
 
     @PostMapping("/confirm-account")
-    public ResponseEntity<?> confirmAccount(@RequestParam("token") String token) {
+    public ResponseEntity<String> confirmAccount(@RequestParam("token") String token) {
         CommonUser user = commonUserRepository.findByConfirmationCode(token)
                 .orElseThrow(() -> new RuntimeException("Invalid or expired confirmation token"));
 
@@ -89,13 +102,18 @@ public class AccountController {
             return ResponseEntity.badRequest().body("Confirmation token is invalid or expired.");
         }
     }
-    @GetMapping("/administrators")
-    public ResponseEntity<List<AdminGiveInfoDto>> getAllAdministrators() {
-        try {
-            List<AdminGiveInfoDto> administrators = accountService.findAllAdministrators();
-            return new ResponseEntity<>(administrators, HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+    @PostMapping("/confirm-admin-account")
+    public ResponseEntity<String> confirmAdminAccount(@RequestParam("token") String token) {
+        Administrator admin = administratorRepository.findByConfirmationCode(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired confirmation token"));
+
+        if (LocalDateTime.now().isBefore(admin.getConfirmationCodeExpiry())) {
+            admin.setAccountStatus("Confirmada");
+            administratorRepository.save(admin);
+            return ResponseEntity.ok("Cuenta de administrador confirmada con éxito.");
+        } else {
+            return ResponseEntity.badRequest().body("El token de confirmación es inválido o ha expirado.");
         }
     }
 
@@ -127,6 +145,14 @@ public class AccountController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/administrators")
+    public ResponseEntity<List<AdminGiveInfoDto>> getAllAdministrators() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentAdminId = authentication.getName();
+        List<AdminGiveInfoDto> administrators = accountService.findAllAdministratorsExcludeLogged(currentAdminId);
+        return ResponseEntity.ok(administrators);
     }
 
     @GetMapping("/profile")

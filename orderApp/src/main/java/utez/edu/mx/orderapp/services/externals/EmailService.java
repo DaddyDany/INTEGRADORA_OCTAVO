@@ -1,4 +1,4 @@
-package utez.edu.mx.orderapp.services.emails;
+package utez.edu.mx.orderapp.services.externals;
 
 import com.sendgrid.Method;
 import com.sendgrid.Request;
