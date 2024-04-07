@@ -1,18 +1,24 @@
 package utez.edu.mx.orderapp.services.categories;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.gax.rpc.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.firebaseintegrations.FirebaseStorageService;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
+import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -21,23 +27,42 @@ import java.util.Optional;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final FirebaseStorageService firebaseStorageService;
+    private final ObjectMapper objectMapper;
+    private final EncryptionService encryptionService;
 
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService){
+    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper){
         this.categoryRepository = categoryRepository;
         this.firebaseStorageService = firebaseStorageService;
+        this.encryptionService = encryptionService;
+        this.objectMapper = objectMapper;
     }
 
 
     @Transactional(readOnly = true)
-    public Response<List<Category>> getAll() {
-        List<Category> categories = this.categoryRepository.findAll();
-        if (categories.isEmpty()) {
-            return new Response<>(true, HttpStatus.NO_CONTENT.value(), "No categories found");
-        } else {
-            return new Response<>(categories, false, HttpStatus.OK.value(), "Categories fetched successfully");
-        }
+    public List<CategoryDto> getAll() {
+        return categoryRepository.findAll().stream()
+                .map(category -> {
+                    try{
+                        return convertToCategoryDto(category);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        return null;
+                    }
+                }).filter(Objects::nonNull)
+                .toList();
+    }
+
+    private CategoryDto convertToCategoryDto(Category category) throws Exception{
+        CategoryDto dto = new CategoryDto(category);
+        String encryptedId = encryptionService.encrypt(String.valueOf(category.getServiceId()));
+        dto.setServiceId(encryptedId);
+        dto.setServiceName(encryptionService.encrypt(category.getServiceName()));
+        dto.setServiceDescription(encryptionService.encrypt(category.getServiceDescription()));
+        dto.setServiceQuote(encryptionService.encrypt(category.getServiceQuote()));
+        dto.setServiceImgUrl(encryptionService.encrypt(category.getServiceImageUrl()));
+        return dto;
     }
 
     @Transactional(readOnly = true)
@@ -48,62 +73,56 @@ public class CategoryService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> insertCategory(CategoryDto categoryDto) {
-       try{
+    public Response<String> insertCategory(String encryptedData, MultipartFile serviceImage) throws Exception{
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+           CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
            Category category = new Category();
            category.setServiceName(categoryDto.getServiceName());
            category.setServiceDescription(categoryDto.getServiceDescription());
            category.setServiceQuote(categoryDto.getServiceQuote());
-           if (categoryDto.getServiceImage() != null && !categoryDto.getServiceImage().isEmpty()){
-               String imageUrl = firebaseStorageService.uploadFile(categoryDto.getServiceImage(), "services-pics/");
+
+           if (serviceImage != null && !serviceImage.isEmpty()){
+               String imageUrl = firebaseStorageService.uploadFile(serviceImage, "services-pics/");
                category.setServiceImageUrl(imageUrl);
            }
-           category = categoryRepository.save(category);
-           return new Response<>(category.getServiceId(), false, 200, "El servicio ha sido agregado con exito");
-       }catch (RuntimeException e) {
-           return new Response<>(true, 200, "Hubo un error registrando el servicio: " + e.getMessage());
-       } catch (IOException e) {
-           throw new RuntimeException(e);
-       }
+           categoryRepository.save(category);
+           return new Response<>("Guardado", false, 200, "El servicio ha sido agregado con exito");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Category> updateCategory(Long id, CategoryDto categoryDto) {
-        Optional<Category> existingCategoryOptional = this.categoryRepository.findById(id);
-        if (existingCategoryOptional.isPresent()) {
-            Category existingCategory = existingCategoryOptional.get();
-            if (categoryDto.getServiceName() != null) {
-                existingCategory.setServiceName(categoryDto.getServiceName());
-            }
-            if (categoryDto.getServiceDescription() != null) {
-                existingCategory.setServiceDescription(categoryDto.getServiceDescription());
-            }
-            if (categoryDto.getServiceQuote() != null) {
-                existingCategory.setServiceQuote(categoryDto.getServiceQuote());
-            }
-            Category updatedCategory = this.categoryRepository.save(existingCategory);
-            return new Response<>(updatedCategory, false, 200, "Servicio actualizado correctamente");
-        } else {
-            return new Response<>(null, true, 404, "No existe el servicio buscado");
-        }
+    public Response<String> updateCategory(String encryptedData) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
+        Long categoryId = Long.parseLong(categoryDto.getServiceId());
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new UsernameNotFoundException("Categoria no encontrada"));
+        category.setServiceName(categoryDto.getServiceName());
+        category.setServiceDescription(categoryDto.getServiceDescription());
+        category.setServiceQuote(categoryDto.getServiceQuote());
+        categoryRepository.save(category);
+        return new Response<>("Servicio actualizado", false, 200, "Información del servicio actualizada con éxito.");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Category> deleteCategory(Long id) {
-        if (this.categoryRepository.existsById(id)) {
-            this.categoryRepository.deleteById(id);
+    public Response<String> deleteCategory(String encryptedData) throws Exception{
+        String correctedData = encryptedData.replace("\"", "");
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+        CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
+        Long categoryId = Long.parseLong(categoryDto.getServiceId());
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new UsernameNotFoundException("Categoria no encontrada"));
+        try {
+            firebaseStorageService.deleteFileFromFirebase(category.getServiceImageUrl(), "services-pics/");
+        } catch (IOException e) {
+            e.printStackTrace();
             return new Response<>(
                     null,
-                    false,
-                    200,
-                    "Servicio eliminado correctamente"
+                    true,
+                    500,
+                    "Error al eliminar la imagen en Firebase"
             );
         }
-        return new Response<>(
-                null,
-                true,
-                200,
-                "No existe el servicio buscado"
-        );
+        categoryRepository.deleteById(category.getServiceId());
+        return new Response<>("Servicio eliminado", false, 200, "Servicio eliminado con exito.");
     }
 }

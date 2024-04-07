@@ -17,15 +17,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import utez.edu.mx.orderapp.controllers.accounts.dtos.AdministratorDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.CommonUserDto;
-import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
 import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
+import utez.edu.mx.orderapp.models.accounts.Worker;
 import utez.edu.mx.orderapp.repositories.accounts.AdministratorRepository;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
+import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
 
@@ -39,13 +39,14 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
     private final CommonUserRepository commonUserRepository;
-
+private final WorkerRepository workerRepository;
     private final AdministratorRepository administratorRepository;
     @Autowired
-    public AccountController(AccountService accountService, CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository){
+    public AccountController(AccountService accountService, CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository, WorkerRepository workerRepository){
         this.accountService = accountService;
         this.commonUserRepository = commonUserRepository;
         this.administratorRepository = administratorRepository;
+        this.workerRepository = workerRepository;
     }
     @PostMapping("/create-common")
     public ResponseEntity<Response<Long>> createCommonUserAccount(@ModelAttribute CommonUserDto commonUserDto){
@@ -77,6 +78,12 @@ public class AccountController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @DeleteMapping("/delete-worker")
+    public ResponseEntity<Response<String>> deleteWorkerAccount(@RequestBody String encryptedData) throws Exception{
+        Response<String> response = accountService.deleteWorker(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PutMapping("/update-admin")
     public ResponseEntity<Response<String>> updateAdmin(@RequestPart("data") String encryptedData) throws Exception {
         Response<String> response = accountService.updateAdminInfo(encryptedData);
@@ -92,28 +99,42 @@ public class AccountController {
     @PostMapping("/confirm-account")
     public ResponseEntity<String> confirmAccount(@RequestParam("token") String token) {
         CommonUser user = commonUserRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired confirmation token"));
+                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
 
         if (LocalDateTime.now().isBefore(user.getConfirmationCodeExpiry())) {
             user.setAccountStatus("Confirmada");
             commonUserRepository.save(user);
-            return ResponseEntity.ok("Account successfully confirmed.");
+            return ResponseEntity.ok("Cuenta confirmada con exito.");
         } else {
-            return ResponseEntity.badRequest().body("Confirmation token is invalid or expired.");
+            return ResponseEntity.badRequest().body("Token no valido o expirado");
+        }
+    }
+
+    @PostMapping("/confirm-worker-account")
+    public ResponseEntity<String> confirmWorkerAccount(@RequestParam("token") String token) {
+        Worker worker = workerRepository.findByConfirmationCode(token)
+                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+
+        if (LocalDateTime.now().isBefore(worker.getConfirmationCodeExpiry())) {
+            worker.setAccountStatus("Confirmada");
+            workerRepository.save(worker);
+            return ResponseEntity.ok("Cuenta de trabajador confirmada con exito.");
+        } else {
+            return ResponseEntity.badRequest().body("Token no valido o expirado");
         }
     }
 
     @PostMapping("/confirm-admin-account")
     public ResponseEntity<String> confirmAdminAccount(@RequestParam("token") String token) {
         Administrator admin = administratorRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Invalid or expired confirmation token"));
+                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
 
         if (LocalDateTime.now().isBefore(admin.getConfirmationCodeExpiry())) {
             admin.setAccountStatus("Confirmada");
             administratorRepository.save(admin);
             return ResponseEntity.ok("Cuenta de administrador confirmada con éxito.");
         } else {
-            return ResponseEntity.badRequest().body("El token de confirmación es inválido o ha expirado.");
+            return ResponseEntity.badRequest().body("Token no valido o expirado");
         }
     }
 
@@ -125,11 +146,12 @@ public class AccountController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update-worker/info/{workerId}")
-    public ResponseEntity<Response<Long>> updateWorker(@PathVariable Long workerId, @RequestPart("data") String encryptedData) throws Exception{
-        Response<Long> response = accountService.updateWorkerInfo(workerId, encryptedData);
+    @PutMapping("/update-worker")
+    public ResponseEntity<Response<String>> updateWorker(@RequestPart("data") String encryptedData) throws Exception{
+        Response<String> response = accountService.updateWorkerInfo(encryptedData);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
+
 
     @PostMapping("/update-worker/profile-pic/{workerId}")
     public ResponseEntity<Response<String>> updateWorkerProfilePic(@PathVariable Long workerId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {

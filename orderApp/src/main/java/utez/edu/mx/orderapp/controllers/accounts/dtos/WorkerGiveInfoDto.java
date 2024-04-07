@@ -16,6 +16,7 @@ public class WorkerGiveInfoDto {
     private String workerCellphone;
     private String workerSecurityNumber;
     private String workerSalary;
+    private String accountStatus;
     private String workerProfilePicUrl;
 
     public WorkerGiveInfoDto(Worker worker) {
@@ -26,5 +27,6 @@ public class WorkerGiveInfoDto {
         this.workerRfc = worker.getWorkerRfc();
         this.workerCellphone = worker.getWorkerCellphone();
         this.workerProfilePicUrl = worker.getWorkerProfilePicUrl();
+        this.accountStatus = worker.getAccountStatus();
     }
 }

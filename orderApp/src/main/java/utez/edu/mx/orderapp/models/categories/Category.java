@@ -8,6 +8,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,10 +29,24 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "service_id")
     private Long serviceId;
+
+    @NotNull(message = "El nombre no debe ser nulo")
+    @NotBlank(message = "El nombre no debe ir vacío")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "service_name")
     private String serviceName;
+
+    @NotNull(message = "La descripción no debe ser nula")
+    @NotBlank(message = "La descripción no debe ir vacía")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(min = 50, max = 3000, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 3000 caracteres")
     @Column(name = "service_description")
     private String serviceDescription;
+
+    @NotNull(message = "La frase no debe ser nula")
+    @NotBlank(message = "La frase no debe ir vacía")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(min = 10, max = 60, message = "La frase del servicio debe tener como mínimo 10 y como máximo 60 caracteres")
     @Column(name = "service_quote")
     private String serviceQuote;
     @Column(name = "service_state")
