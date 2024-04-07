@@ -1,10 +1,7 @@
 package utez.edu.mx.orderapp.services.accounts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.ConstraintViolationException;
-import org.apache.commons.lang3.mutable.Mutable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,13 +22,13 @@ import utez.edu.mx.orderapp.repositories.accounts.AdministratorRepository;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.repositories.accounts.RoleRepository;
 import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
-import utez.edu.mx.orderapp.services.emails.EmailService;
+import utez.edu.mx.orderapp.services.externals.EmailService;
+import utez.edu.mx.orderapp.services.externals.SmsService;
 import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -49,6 +46,7 @@ public class AccountService {
     private final FirebaseStorageService firebaseStorageService;
     private final EncryptionService encryptionService;
     private final ObjectMapper objectMapper;
+    private final SmsService smsService;
 
     private static final String ROLE_WORKER = "WORKER";
     private static final String ROLE_ADMIN = "ADMIN";
@@ -57,7 +55,7 @@ public class AccountService {
 
 
     @Autowired
-    public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder, EmailService emailService, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper){
+    public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder, EmailService emailService, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper, SmsService smsService){
         this.roleRepository = roleRepository;
         this.commonUserRepository = commonUserRepository;
         this.workerRepository = workerRepository;
@@ -67,6 +65,7 @@ public class AccountService {
         this.firebaseStorageService = firebaseStorageService;
         this.encryptionService = encryptionService;
         this.objectMapper = objectMapper;
+        this.smsService = smsService;
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -160,6 +159,11 @@ public class AccountService {
         administrator.setAdminSalary(adminSalary);
         administrator.setAdminSecurityNumber(adminDto.getAdminSecurityNumber());
 
+        administrator.setAccountStatus("Sin confirmar");
+        String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+        administrator.setConfirmationCode(confirmationCode);
+        administrator.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
+
         if (adminProfilePic != null && !adminProfilePic.isEmpty()) {
             String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, "admins-profile-pics/");
             administrator.setAdminProfilePicUrl(imageUrl);
@@ -169,6 +173,8 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
         administrator.setRole(role);
         administratorRepository.save(administrator);
+        String smsContent = "Tu código de confirmación es: " + confirmationCode;
+        smsService.sendSms(smsContent);
         return new Response<>("Creado", false, 200, "La cuenta de administrador ha sido creada con éxito");
     }
 
@@ -206,12 +212,7 @@ public class AccountService {
 
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
-
-        System.out.println("El id es: " + adminDto.getAdminId());
-
         Long adminId = Long.parseLong(adminDto.getAdminId());
-
-
         Administrator administrator = administratorRepository.findById(adminId)
                 .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
 
@@ -224,6 +225,36 @@ public class AccountService {
         administrator.setAdminSalary(adminSalary);
         administratorRepository.save(administrator);
         return new Response<>("Admin actualizado", false, 200, "Información del administrador actualizada con éxito.");
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> deleteAdmin(String encryptedData) throws Exception{
+        System.out.println(encryptedData);
+        String correctedData = encryptedData.replace("\"", "");
+        System.out.println(correctedData);
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+
+        System.out.println(decryptedDataJson);
+
+        AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
+        Long adminId = Long.parseLong(adminDto.getAdminId());
+        Administrator administrator = administratorRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+
+        try {
+            firebaseStorageService.deleteFileFromFirebase(administrator.getAdminProfilePicUrl(), "admins-profile-pics/");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new Response<>(
+                    null,
+                    true,
+                    500,
+                    "Error al eliminar la imagen en Firebase"
+            );
+        }
+
+        administratorRepository.deleteById(administrator.getAdminId());
+        return new Response<>("Admin eliminado", false, 200, "Administrador eliminado con exito.");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -248,15 +279,19 @@ public class AccountService {
         }
     }
 
-    public List<AdminGiveInfoDto> findAllAdministrators() {
-        List<Administrator> administrators = administratorRepository.findAllByRoleName(ROLE_ADMIN);
-        return administrators.stream().map(administrator -> {
-           try{
-               return convertToAdminDto(administrator);
-           }catch (Exception e){
-               return null;
-           }
-        }).filter(Objects::nonNull).toList();
+    public List<AdminGiveInfoDto> findAllAdministratorsExcludeLogged(String excludeAdminId) {
+        return administratorRepository.findAll().stream()
+                .filter(admin -> !admin.getAdminEmail().equals(excludeAdminId))
+                .map(admin -> {
+                    try {
+                        return convertToAdminDto(admin);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private AdminGiveInfoDto convertToAdminDto(Administrator administrator) throws  Exception {
@@ -268,6 +303,7 @@ public class AccountService {
         dto.setAdminSecondLastName(encryptionService.encrypt(administrator.getAdminSecondLastName()));
         dto.setAdminSecurityNumber(encryptionService.encrypt(administrator.getAdminSecurityNumber()));
         dto.setAdminProfilePicUrl(encryptionService.encrypt(administrator.getAdminProfilePicUrl()));
+        dto.setAccountStatus(encryptionService.encrypt(administrator.getAccountStatus()));
         String encryptedSalary = encryptionService.encrypt(String.valueOf(administrator.getAdminSalary()));
         dto.setAdminSalary(encryptedSalary);
         dto.setAdminEmail(encryptionService.encrypt(administrator.getAdminEmail()));

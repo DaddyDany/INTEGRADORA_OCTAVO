@@ -16,6 +16,8 @@ public class AdminGiveInfoDto {
     private String adminSecurityNumber;
     private String adminProfilePicUrl;
     private String adminSalary;
+    private String accountStatus;
+
     public AdminGiveInfoDto(Administrator administrator) {
         this.adminName = administrator.getAdminName();
         this.adminFirstLastName = administrator.getAdminFirstLastName();

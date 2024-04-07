@@ -50,6 +50,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new Response<>(true, 419, errorMessage), HttpStatus.valueOf(CustomHttpStatusTwo.HTTP_STATUS_419.value()));
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        if (ex.getMessage().contains("Invalid or expired confirmation token")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocurrió un error interno.");
+    }
+
     static class ErrorResponse {
         private String message;
         private int status;

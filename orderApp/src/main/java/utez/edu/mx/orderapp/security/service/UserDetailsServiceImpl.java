@@ -40,6 +40,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
         Administrator administrator = administratorRepository.findByAdminEmail(email).orElse(null);
         if (administrator != null) {
+            if(!"Confirmada".equals(administrator.getAccountStatus())){
+                throw new UsernameNotFoundException("La cuenta no esta confirmada para: " + email);
+            }
             return UserDetailsImpl.fromAdministrator(administrator);
         }
         throw new UsernameNotFoundException("Usuario no encontrado con email: " + email);

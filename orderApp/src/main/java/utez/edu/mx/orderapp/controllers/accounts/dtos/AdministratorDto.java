@@ -16,6 +16,7 @@ public class AdministratorDto {
     private String adminCellphone;
     private String adminSecurityNumber;
     private String adminSalary;
+    private String accountStatus;
     private MultipartFile adminProfilePic;
 
 }

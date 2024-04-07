@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import utez.edu.mx.orderapp.models.accounts.Administrator;
+import utez.edu.mx.orderapp.models.accounts.CommonUser;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,8 @@ public interface AdministratorRepository extends JpaRepository<Administrator, Lo
     Optional<Administrator> findByAdminName(String username);
 
     Optional<Administrator> findByAdminEmail(String email);
+
+    Optional<Administrator> findByConfirmationCode(String code);
 
     @Query("SELECT a FROM Administrator a WHERE a.role.roleName = :roleName")
     List<Administrator> findAllByRoleName(@Param("roleName") String roleName);

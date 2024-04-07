@@ -17,6 +17,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -35,13 +37,13 @@ public class Administrator {
 
     @NotNull(message = "El apellido paterno no debe ser nulo")
     @NotBlank(message = "El apellido paterno no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-Z.,\\s]*$", message = "El campo solo puede contener letras, puntos y comas")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "admin_first_last_name")
     private String adminFirstLastName;
 
     @NotNull(message = "El apellido materno no debe ser nulo")
     @NotBlank(message = "El apellido materno no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-Z.,\\s]*$", message = "El campo solo puede contener letras, puntos y comas")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "admin_second_last_name")
     private String adminSecondLastName;
 
@@ -74,6 +76,15 @@ public class Administrator {
     @Max(value = 50000, message = "El salario no debe ser superior a 50000, dudo que alguien aqui gane más que eso")
     @Column(name = "admin_salary")
     private Long adminSalary;
+
+    @Column(name = "account_status")
+    private String accountStatus = "Sin confirmar";
+
+    @Column(name = "confirmation_code")
+    private String confirmationCode;
+
+    @Column(name = "confirmation_code_expiry")
+    private LocalDateTime confirmationCodeExpiry;
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
