@@ -59,14 +59,14 @@ public class AccountController {
     }
 
     @PostMapping("/create-admin")
-    public ResponseEntity<Response<Long>> createAdminAccount(@ModelAttribute AdministratorDto administratorDto){
-        Response<Long> response = accountService.createAdministratorAccount(administratorDto);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    public ResponseEntity<Response<String>> createAdminAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "adminProfilePic", required = false) MultipartFile adminProfilePic) throws Exception{
+        Response<String> response = accountService.createAdministratorAccount(encryptedData, adminProfilePic);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update-admin/info/{adminId}")
-    public ResponseEntity<Response<Long>> updateAdmin(@PathVariable Long adminId, @RequestBody AdministratorDto administratorDto) {
-        Response<Long> response = accountService.updateAdminInfo(adminId, administratorDto);
+    @PutMapping("/update-admin")
+    public ResponseEntity<Response<String>> updateAdmin(@RequestPart("data") String encryptedData) throws Exception {
+        Response<String> response = accountService.updateAdminInfo(encryptedData);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
@@ -87,15 +87,6 @@ public class AccountController {
             return ResponseEntity.ok("Account successfully confirmed.");
         } else {
             return ResponseEntity.badRequest().body("Confirmation token is invalid or expired.");
-        }
-    }
-    @GetMapping("/administrators")
-    public ResponseEntity<List<AdminGiveInfoDto>> getAllAdministrators() {
-        try {
-            List<AdminGiveInfoDto> administrators = accountService.findAllAdministrators();
-            return new ResponseEntity<>(administrators, HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -124,6 +115,16 @@ public class AccountController {
         try {
             List<WorkerGiveInfoDto> workers = accountService.findAllWorkers();
             return new ResponseEntity<>(workers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/administrators")
+    public ResponseEntity<List<AdminGiveInfoDto>> getAllAdministrators() {
+        try {
+            List<AdminGiveInfoDto> administrators = accountService.findAllAdministrators();
+            return new ResponseEntity<>(administrators, HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

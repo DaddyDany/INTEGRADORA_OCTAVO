@@ -1,7 +1,10 @@
 package utez.edu.mx.orderapp.services.accounts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolationException;
+import org.apache.commons.lang3.mutable.Mutable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -44,7 +48,7 @@ public class AccountService {
     private final EmailService emailService;
     private final FirebaseStorageService firebaseStorageService;
     private final EncryptionService encryptionService;
-    private final ObjectMapper objectMapper; // Inyecta ObjectMapper
+    private final ObjectMapper objectMapper;
 
     private static final String ROLE_WORKER = "WORKER";
     private static final String ROLE_ADMIN = "ADMIN";
@@ -73,6 +77,9 @@ public class AccountService {
             commonUser.setUserEmail(commonUserDto.getUserEmail());
             commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
             commonUser.setUserName(commonUserDto.getUserName());
+            if (commonUser.getUserPassword() == null || commonUser.getUserPassword().isEmpty()){
+                throw new IllegalArgumentException("La contraseña no puede estar vacía");
+            }
             commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
             commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
 
@@ -135,50 +142,88 @@ public class AccountService {
         }
     }
 
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> createAdministratorAccount(AdministratorDto administratorDto) {
-        try {
-            Administrator administrator = new Administrator();
-            administrator.setAdminCellphone(administratorDto.getAdminCellphone());
-            administrator.setAdminEmail(administratorDto.getAdminEmail());
-            administrator.setAdminFirstLastName(administratorDto.getAdminFirstLastName());
-            administrator.setAdminName(administratorDto.getAdminName());
-            administrator.setAdminPassword(passwordEncoder.encode(administratorDto.getAdminPassword()));
-            administrator.setAdminSecondLastName(administratorDto.getAdminSecondLastName());
-            administrator.setAdminSalary(administratorDto.getAdminSalary());
-            administrator.setAdminSecurityNumber(administratorDto.getAdminSecurityNumber());
-
-            if (administratorDto.getAdminProfilePic() != null && !administratorDto.getAdminProfilePic().isEmpty()) {
-                String imageUrl = firebaseStorageService.uploadFile(administratorDto.getAdminProfilePic(), "admins-profile-pics/");
-                administrator.setAdminProfilePicUrl(imageUrl);
-            }
-
-            Role role = roleRepository.findByRoleName(ROLE_ADMIN)
-                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
-            administrator.setRole(role);
-            administrator = administratorRepository.save(administrator);
-            return new Response<>(administrator.getAdminId(),false, 200, "La cuenta de adminstrador ha sido creada con éxito");
-
-        }catch (RuntimeException e) {
-            return new Response<>(true, 200, "Hubo un error creando la cuenta de administrador: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    @Transactional(rollbackFor = {Exception.class})
+    public Response<String> createAdministratorAccount(String encryptedData, MultipartFile adminProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
+        Administrator administrator = new Administrator();
+        administrator.setAdminCellphone(adminDto.getAdminCellphone());
+        administrator.setAdminEmail(adminDto.getAdminEmail());
+        administrator.setAdminFirstLastName(adminDto.getAdminFirstLastName());
+        administrator.setAdminName(adminDto.getAdminName());
+        if (adminDto.getAdminPassword() == null || adminDto.getAdminPassword().isEmpty()) {
+            throw new IllegalArgumentException("La contraseña no puede estar vacía");
         }
+        administrator.setAdminPassword(passwordEncoder.encode(adminDto.getAdminPassword()));
+        administrator.setAdminSecondLastName(adminDto.getAdminSecondLastName());
+        Long adminSalary = Long.parseLong(adminDto.getAdminSalary());
+        administrator.setAdminSalary(adminSalary);
+        administrator.setAdminSecurityNumber(adminDto.getAdminSecurityNumber());
+
+        if (adminProfilePic != null && !adminProfilePic.isEmpty()) {
+            String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, "admins-profile-pics/");
+            administrator.setAdminProfilePicUrl(imageUrl);
+        }
+
+        Role role = roleRepository.findByRoleName(ROLE_ADMIN)
+                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
+        administrator.setRole(role);
+        administratorRepository.save(administrator);
+        return new Response<>("Creado", false, 200, "La cuenta de administrador ha sido creada con éxito");
+    }
+
+
+    @Transactional(rollbackFor = {Exception.class})
+    public Response<Long> createWorkerAccount(String encryptedData, MultipartFile workerProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
+        Worker worker = new Worker();
+        worker.setWorkerEmail(workerDto.getWorkerEmail());
+        worker.setWorkerName(workerDto.getWorkerName());
+        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
+        worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
+        worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
+        worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
+        worker.setWorkerSalary(workerDto.getWorkerSalary());
+        worker.setWorkerRfc(workerDto.getWorkerRfc());
+        if (worker.getWorkerPassword() == null || worker.getWorkerPassword().isEmpty()){
+            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+        }
+        worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
+        if (workerProfilePic != null && !workerProfilePic.isEmpty()) {
+            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
+            worker.setWorkerProfilePicUrl(imageUrl);
+        }
+        Role role = roleRepository.findByRoleName(ROLE_WORKER)
+                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
+        worker.setRole(role);
+        worker = workerRepository.save(worker);
+        return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> updateAdminInfo(Long adminId, AdministratorDto administratorDto) {
+    public Response<String> updateAdminInfo(String encryptedData) throws Exception {
+
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
+
+        System.out.println("El id es: " + adminDto.getAdminId());
+
+        Long adminId = Long.parseLong(adminDto.getAdminId());
+
+
         Administrator administrator = administratorRepository.findById(adminId)
                 .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
-        administrator.setAdminCellphone(administratorDto.getAdminCellphone());
-        administrator.setAdminName(administratorDto.getAdminName());
-        administrator.setAdminFirstLastName(administratorDto.getAdminFirstLastName());
-        administrator.setAdminSecondLastName(administratorDto.getAdminSecondLastName());
-        administrator.setAdminSecurityNumber(administratorDto.getAdminSecurityNumber());
-        administrator.setAdminSalary(administratorDto.getAdminSalary());
-        administrator.setAdminEmail(administratorDto.getAdminEmail());
+
+        administrator.setAdminCellphone(adminDto.getAdminCellphone());
+        administrator.setAdminName(adminDto.getAdminName());
+        administrator.setAdminFirstLastName(adminDto.getAdminFirstLastName());
+        administrator.setAdminSecondLastName(adminDto.getAdminSecondLastName());
+        administrator.setAdminSecurityNumber(adminDto.getAdminSecurityNumber());
+        Long adminSalary = Long.parseLong(adminDto.getAdminSalary());
+        administrator.setAdminSalary(adminSalary);
         administratorRepository.save(administrator);
-        return new Response<>(administrator.getAdminId(), false, 200, "Información del administrador actualizada con éxito.");
+        return new Response<>("Admin actualizado", false, 200, "Información del administrador actualizada con éxito.");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -205,15 +250,28 @@ public class AccountService {
 
     public List<AdminGiveInfoDto> findAllAdministrators() {
         List<Administrator> administrators = administratorRepository.findAllByRoleName(ROLE_ADMIN);
-        return administrators.stream().map(this::convertToAdminDto).toList();
+        return administrators.stream().map(administrator -> {
+           try{
+               return convertToAdminDto(administrator);
+           }catch (Exception e){
+               return null;
+           }
+        }).filter(Objects::nonNull).toList();
     }
 
-    private AdminGiveInfoDto convertToAdminDto(Administrator administrator) {
+    private AdminGiveInfoDto convertToAdminDto(Administrator administrator) throws  Exception {
         AdminGiveInfoDto dto = new AdminGiveInfoDto(administrator);
-        dto.setAdminName(administrator.getAdminName());
-        dto.setAdminFirstLastName(administrator.getAdminFirstLastName());
-        dto.setAdminEmail(administrator.getAdminEmail());
-        dto.setAdminCellphone(administrator.getAdminCellphone());
+        String encryptedId = encryptionService.encrypt(String.valueOf(administrator.getAdminId()));
+        dto.setAdminId(encryptedId);
+        dto.setAdminName(encryptionService.encrypt(administrator.getAdminName()));
+        dto.setAdminFirstLastName(encryptionService.encrypt(administrator.getAdminFirstLastName()));
+        dto.setAdminSecondLastName(encryptionService.encrypt(administrator.getAdminSecondLastName()));
+        dto.setAdminSecurityNumber(encryptionService.encrypt(administrator.getAdminSecurityNumber()));
+        dto.setAdminProfilePicUrl(encryptionService.encrypt(administrator.getAdminProfilePicUrl()));
+        String encryptedSalary = encryptionService.encrypt(String.valueOf(administrator.getAdminSalary()));
+        dto.setAdminSalary(encryptedSalary);
+        dto.setAdminEmail(encryptionService.encrypt(administrator.getAdminEmail()));
+        dto.setAdminCellphone(encryptionService.encrypt(administrator.getAdminCellphone()));
         return dto;
     }
 
@@ -237,7 +295,7 @@ public class AccountService {
         String encryptedId = encryptionService.encrypt(String.valueOf(worker.getWorkerId()));
         dto.setWorkerId(encryptedId);
         dto.setWorkerName(encryptionService.encrypt(worker.getWorkerName()));
-        dto.setWorkerFirstLastName(encryptionService.encrypt( worker.getWorkerFirstLastName()));
+        dto.setWorkerFirstLastName(encryptionService.encrypt(worker.getWorkerFirstLastName()));
         dto.setWorkerSecondLastName(encryptionService.encrypt(worker.getWorkerSecondLastName()));
         dto.setWorkerCellphone(encryptionService.encrypt(worker.getWorkerCellphone()));
         dto.setWorkerEmail(encryptionService.encrypt(worker.getWorkerEmail()));
@@ -248,34 +306,6 @@ public class AccountService {
         dto.setWorkerSecurityNumber(encryptedSecurityNumber);
         dto.setWorkerProfilePicUrl(encryptionService.encrypt(worker.getWorkerProfilePicUrl()));
         return dto;
-    }
-
-    @Transactional(rollbackFor = {Exception.class})
-    public Response<Long> createWorkerAccount(String encryptedData, MultipartFile workerProfilePic) throws Exception {
-        String decryptedDataJson = encryptionService.decrypt(encryptedData);
-        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
-        if (workerDto.getWorkerPassword() == null) {
-            throw new RuntimeException("La contraseña desencriptada es nula.");
-        }
-        Worker worker = new Worker();
-        worker.setWorkerEmail(workerDto.getWorkerEmail());
-        worker.setWorkerName(workerDto.getWorkerName());
-        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
-        worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
-        worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
-        worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
-        worker.setWorkerSalary(workerDto.getWorkerSalary());
-        worker.setWorkerRfc(workerDto.getWorkerRfc());
-        worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
-        if (workerProfilePic != null && !workerProfilePic.isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
-            worker.setWorkerProfilePicUrl(imageUrl);
-        }
-        Role role = roleRepository.findByRoleName(ROLE_WORKER)
-                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
-        worker.setRole(role);
-        worker = workerRepository.save(worker);
-        return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
     }
 
     @Transactional(rollbackFor = {SQLException.class})

@@ -7,7 +7,7 @@ import utez.edu.mx.orderapp.models.accounts.Administrator;
 @Getter
 @Setter
 public class AdminGiveInfoDto {
-    private Long adminId;
+    private String adminId;
     private String adminName;
     private String adminFirstLastName;
     private String adminSecondLastName;
@@ -15,10 +15,8 @@ public class AdminGiveInfoDto {
     private String adminCellphone;
     private String adminSecurityNumber;
     private String adminProfilePicUrl;
-    private Integer adminSalary;
-    private String adminRfc;
+    private String adminSalary;
     public AdminGiveInfoDto(Administrator administrator) {
-        this.adminId = administrator.getAdminId();
         this.adminName = administrator.getAdminName();
         this.adminFirstLastName = administrator.getAdminFirstLastName();
         this.adminSecondLastName = administrator.getAdminSecondLastName();
@@ -26,6 +24,6 @@ public class AdminGiveInfoDto {
         this.adminCellphone = administrator.getAdminCellphone();
         this.adminSecurityNumber = administrator.getAdminSecurityNumber().toString();
         this.adminProfilePicUrl = administrator.getAdminProfilePicUrl();
-        this.adminSalary = administrator.getAdminSalary();
+        this.adminSalary = administrator.getAdminSalary().toString();
     }
 }

@@ -15,8 +15,6 @@ import utez.edu.mx.orderapp.security.entity.UserDetailsImpl;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-
-
     private final CommonUserRepository commonUserRepository;
     private final AdministratorRepository administratorRepository;
     private final WorkerRepository workerRepository;
