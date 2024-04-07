@@ -97,7 +97,7 @@ public class OrderController {
     }
 
     @PatchMapping("/decline/{id}")
-    public ResponseEntity<?> declineOrder(@PathVariable Long id) {
+    public ResponseEntity<String> declineOrder(@PathVariable Long id) {
         try {
             orderService.declineOrder(id);
             return ResponseEntity.ok().body("Orden declinada con éxito");
@@ -117,7 +117,7 @@ public class OrderController {
     }
 
     @PatchMapping("/complete/{id}")
-    public ResponseEntity<?> completeOrder(@PathVariable Long id) {
+    public ResponseEntity<String> completeOrder(@PathVariable Long id) {
         try {
             orderService.completeOrder(id);
             return ResponseEntity.ok().body("Orden completada con éxito");

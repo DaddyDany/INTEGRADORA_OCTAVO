@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import utez.edu.mx.orderapp.security.jwt.JwtAuthenticationFilter;
-import utez.edu.mx.orderapp.security.jwt.JwtProvider;
 import utez.edu.mx.orderapp.security.service.UserDetailsServiceImpl;
 
 @Configuration

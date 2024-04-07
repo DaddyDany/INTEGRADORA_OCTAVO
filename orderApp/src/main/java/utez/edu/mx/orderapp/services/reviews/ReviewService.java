@@ -14,12 +14,10 @@ import utez.edu.mx.orderapp.utils.Response;
 public class ReviewService {
     private final OrderRepository orderRepository;
     private final ReviewRepository reviewRepository;
-    private final CommonUserRepository commonUserRepository;
     @Autowired
-    public ReviewService(OrderRepository orderRepository, ReviewRepository reviewRepository, CommonUserRepository commonUserRepository){
+    public ReviewService(OrderRepository orderRepository, ReviewRepository reviewRepository){
         this.orderRepository = orderRepository;
         this.reviewRepository = reviewRepository;
-        this.commonUserRepository = commonUserRepository;
     }
 
     public Response<ReviewDto> saveReview(ReviewDto reviewDto, Long userId) {
@@ -31,7 +29,7 @@ public class ReviewService {
         }
         Review review = new Review();
         review.setOrder(order);
-        review.setReview(reviewDto.getReview());
+        review.setReviewDescription(reviewDto.getReviewDescription());
         review.setScore(reviewDto.getScore());
         review.setUserId(userId);
         review = reviewRepository.save(review);

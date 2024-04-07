@@ -1,6 +1,5 @@
 package utez.edu.mx.orderapp.controllers.combos;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,10 +57,10 @@ public class ComboController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody ComboDto comboDto) {
+    public ResponseEntity<String> update(@PathVariable("id") Long id, @RequestBody ComboDto comboDto) {
         Response<Combo> response = comboService.updateCombo(id, comboDto);
         if (!response.isSuccess()) {
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+            return new ResponseEntity<>("Actualizacion de combo realizada", HttpStatus.OK);
         } else {
             return ResponseEntity
                     .status(HttpStatus.valueOf(response.getStatus()))

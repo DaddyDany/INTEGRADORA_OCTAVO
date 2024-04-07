@@ -29,8 +29,8 @@ public class Review {
     @Column(nullable = false)
     private Long userId;
 
-    @Column(length = 255)
-    private String review;
+    @Column(name = "review_description")
+    private String reviewDescription;
 
     @Column(nullable = false)
     private Integer score;

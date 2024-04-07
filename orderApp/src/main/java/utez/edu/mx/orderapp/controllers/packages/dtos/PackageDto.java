@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
-import utez.edu.mx.orderapp.models.categories.Category;
-import utez.edu.mx.orderapp.models.packages.Package;
 
 import java.util.List;
 

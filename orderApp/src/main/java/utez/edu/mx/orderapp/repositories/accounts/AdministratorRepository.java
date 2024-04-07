@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import utez.edu.mx.orderapp.models.accounts.Administrator;
-import utez.edu.mx.orderapp.models.accounts.CommonUser;
 
 import java.util.List;
 import java.util.Optional;
