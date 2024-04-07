@@ -1,6 +1,5 @@
 package utez.edu.mx.orderapp.controllers.categories.dtos;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,22 +12,18 @@ import utez.edu.mx.orderapp.models.categories.Category;
 @Setter
 @Getter
 public class CategoryDto {
+    private String serviceId;
     private String serviceName;
     private String serviceDescription;
     private String serviceQuote;
     private MultipartFile serviceImage;
     private String serviceImgUrl;
 
-    @JsonProperty("serviceImageUrl")
-    public void setServiceImageUrl(String serviceImageUrl) {
-        this.serviceImgUrl = serviceImageUrl;
+    public CategoryDto(Category category){
+        this.serviceName = category.getServiceName();
+        this.serviceDescription = category.getServiceDescription();
+        this.serviceQuote = category.getServiceQuote();
+        this.serviceImgUrl = category.getServiceImageUrl();
     }
-    public Category getCategory(){
-        return new Category(
-                getServiceName(),
-                getServiceDescription(),
-                getServiceQuote(),
-                getServiceImgUrl()
-        );
-    }
+
 }

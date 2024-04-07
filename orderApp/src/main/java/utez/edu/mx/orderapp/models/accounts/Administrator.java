@@ -59,7 +59,7 @@ public class Administrator {
     @NotNull(message = "El telefono no debe ser nulo")
     @NotBlank(message = "El telefono no debe estar en blanco")
     @Size(min = 10, max = 10, message = "El teléfono debe tener exactamente 10 dígitos")
-    @Pattern(regexp = "^[0-9]{10}$", message = "El teléfono solo debe contener dígitos")
+    @Pattern(regexp = "^\\d{10}$", message = "El teléfono solo debe contener dígitos")
     @Column(name = "admin_cellphone")
     private String adminCellphone;
 

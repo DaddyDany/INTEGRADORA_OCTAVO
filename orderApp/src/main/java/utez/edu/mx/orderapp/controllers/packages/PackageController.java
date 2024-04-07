@@ -56,10 +56,10 @@ public class PackageController {
     }
 
     @GetMapping("/package-info-users/{id}")
-    public ResponseEntity<?> getPackage(@PathVariable("id") Long id) {
+    public ResponseEntity<String> getPackage(@PathVariable("id") Long id) {
         Response<PackageInfoDto> response = packageService.getPackageWithImages(id);
         if (response.isSuccess()) {
-            return ResponseEntity.ok(response.getData());
+            return ResponseEntity.ok(response.getData().getPackageName());
         } else {
             return ResponseEntity
                     .status(HttpStatus.valueOf(response.getStatus()))
@@ -77,10 +77,10 @@ public class PackageController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody PackageDto packageDto) {
+    public ResponseEntity<String> update(@PathVariable("id") Long id, @RequestBody PackageDto packageDto) {
         Response<Package> response = packageService.updatePackage(id, packageDto);
         if (!response.isSuccess()) {
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+            return new ResponseEntity<>("Paquete Actualizado", HttpStatus.OK);
         } else {
             return ResponseEntity
                     .status(HttpStatus.valueOf(response.getStatus()))

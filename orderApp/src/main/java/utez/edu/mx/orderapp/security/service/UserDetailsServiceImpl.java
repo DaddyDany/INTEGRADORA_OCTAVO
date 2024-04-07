@@ -36,6 +36,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         }
         Worker worker = workerRepository.findByWorkerEmail(email).orElse(null);
         if (worker != null) {
+            if (!"Confirmada".equals(worker.getAccountStatus())) {
+                throw new UsernameNotFoundException("La cuenta no está confirmada para el email: " + email);
+            }
             return UserDetailsImpl.fromWorker(worker);
         }
         Administrator administrator = administratorRepository.findByAdminEmail(email).orElse(null);

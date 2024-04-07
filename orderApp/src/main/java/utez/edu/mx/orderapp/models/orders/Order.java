@@ -16,8 +16,6 @@ import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.reviews.Review;
-
-import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -85,8 +83,5 @@ public class Order {
         this.orderPlace = orderPlace;
         this.orderTime = orderTime;
         this.commonUser = commonUser;
-    }
-
-    public void addOrderPackage(OrderPackage orderPackage) {
     }
 }

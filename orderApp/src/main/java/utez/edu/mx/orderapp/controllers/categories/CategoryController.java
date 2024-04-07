@@ -1,5 +1,6 @@
 package utez.edu.mx.orderapp.controllers.categories;
 
+import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.models.packages.Package;
@@ -37,14 +41,11 @@ public class CategoryController {
         this.categoryService = categoryService;
         this.packageService = packageService;
     }
+
     @GetMapping
-    public ResponseEntity<List<Category>> getAll() {
-        Response<List<Category>> response = this.categoryService.getAll();
-        if (response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.valueOf(response.getStatus()));
-        } else {
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
+    public ResponseEntity<List<CategoryDto>> getAll() {
+        List<CategoryDto> categories = categoryService.getAll();
+        return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/{id}")
@@ -68,28 +69,20 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Response<Long>> insertService(@Valid @ModelAttribute CategoryDto service) {
-        Response<Long> response = categoryService.insertCategory(service);
+    public ResponseEntity<Response<String>> insertService(@RequestPart("data") String encryptedData, @RequestParam(value = "serviceImage", required = false)MultipartFile serviceImage) throws Exception {
+        Response<String> response = categoryService.insertCategory(encryptedData, serviceImage);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable("id") Long id, @RequestBody CategoryDto serviceDto){
-        Response<Category> response = this.categoryService.updateCategory(id, serviceDto);
-        if (response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
+    @PutMapping("/update-service")
+    public ResponseEntity<Response<String>> update(@RequestPart("data") String encryptedData) throws Exception{
+        Response<String> response = categoryService.updateCategory(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Category> delete(@PathVariable("id") Long id) {
-        Response<Category> response = this.categoryService.deleteCategory(id);
-        if (response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
+    @DeleteMapping("/delete-service")
+    public ResponseEntity<Response<String>> delete(@RequestBody String encryptedData) throws Exception{
+        Response<String> response = categoryService.deleteCategory(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

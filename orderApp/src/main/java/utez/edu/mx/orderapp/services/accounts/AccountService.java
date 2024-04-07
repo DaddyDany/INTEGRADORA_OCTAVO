@@ -182,6 +182,7 @@ public class AccountService {
     @Transactional(rollbackFor = {Exception.class})
     public Response<Long> createWorkerAccount(String encryptedData, MultipartFile workerProfilePic) throws Exception {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        System.out.println(decryptedDataJson);
         WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
         Worker worker = new Worker();
         worker.setWorkerEmail(workerDto.getWorkerEmail());
@@ -190,12 +191,20 @@ public class AccountService {
         worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
         worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
         worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
-        worker.setWorkerSalary(workerDto.getWorkerSalary());
+        Long workerSalary = Long.parseLong(workerDto.getWorkerSalary());
+        worker.setWorkerSalary(workerSalary);
         worker.setWorkerRfc(workerDto.getWorkerRfc());
-        if (worker.getWorkerPassword() == null || worker.getWorkerPassword().isEmpty()){
+
+        worker.setAccountStatus("Sin confirmar");
+        String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+        worker.setConfirmationCode(confirmationCode);
+        worker.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
+
+        if (workerDto.getWorkerPassword() == null || workerDto.getWorkerPassword().isEmpty()){
             throw new IllegalArgumentException("La contraseña no puede estar vacía");
         }
         worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
+
         if (workerProfilePic != null && !workerProfilePic.isEmpty()) {
             String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
             worker.setWorkerProfilePicUrl(imageUrl);
@@ -204,12 +213,15 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
         worker.setRole(role);
         worker = workerRepository.save(worker);
+
+        String emailContent = "Tu código de confirmación es: " + confirmationCode;
+        emailService.sendConfirmationEmail(worker.getWorkerEmail(), "Confirmación de tu cuenta", emailContent);
+
         return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> updateAdminInfo(String encryptedData) throws Exception {
-
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
         Long adminId = Long.parseLong(adminDto.getAdminId());
@@ -229,13 +241,8 @@ public class AccountService {
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> deleteAdmin(String encryptedData) throws Exception{
-        System.out.println(encryptedData);
         String correctedData = encryptedData.replace("\"", "");
-        System.out.println(correctedData);
         String decryptedDataJson = encryptionService.decrypt(correctedData);
-
-        System.out.println(decryptedDataJson);
-
         AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
         Long adminId = Long.parseLong(adminDto.getAdminId());
         Administrator administrator = administratorRepository.findById(adminId)
@@ -336,6 +343,7 @@ public class AccountService {
         dto.setWorkerCellphone(encryptionService.encrypt(worker.getWorkerCellphone()));
         dto.setWorkerEmail(encryptionService.encrypt(worker.getWorkerEmail()));
         dto.setWorkerRfc(encryptionService.encrypt(worker.getWorkerRfc()));
+        dto.setAccountStatus(encryptionService.encrypt(worker.getAccountStatus()));
         String encryptedSalary = encryptionService.encrypt(String.valueOf(worker.getWorkerSalary()));
         dto.setWorkerSalary(encryptedSalary);
         String encryptedSecurityNumber = encryptionService.encrypt(String.valueOf(worker.getWorkerSecurityNumber()));
@@ -345,24 +353,48 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> updateWorkerInfo(Long workerId, String encryptedData) throws Exception {
-        System.out.println("Before Decryption: " + encryptedData);
+    public Response<String> updateWorkerInfo(String encryptedData) throws Exception {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
-        System.out.println(decryptedDataJson);
         WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
-
+        Long workerId = Long.parseLong(workerDto.getWorkerId());
         Worker worker = workerRepository.findById(workerId)
                 .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+
         worker.setWorkerName(workerDto.getWorkerName());
         worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
         worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
         worker.setWorkerCellphone(workerDto.getWorkerCellphone());
         worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
-        worker.setWorkerSalary(workerDto.getWorkerSalary());
+        Long workerSalary = Long.parseLong(workerDto.getWorkerSalary());
+        worker.setWorkerSalary(workerSalary);
         worker.setWorkerRfc(workerDto.getWorkerRfc());
         workerRepository.save(worker);
-        return new Response<>(worker.getWorkerId(), false, 200, "Información del trabajador actualizada con éxito.");
+        return new Response<>("Trabajador actualizado", false, 200, "Información del trabajador actualizada con éxito.");
     }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> deleteWorker(String encryptedData) throws Exception{
+        String correctedData = encryptedData.replace("\"", "");
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
+        Long workerId = Long.parseLong(workerDto.getWorkerId());
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+        try {
+            firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), "workers-profile-pics/");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new Response<>(
+                    null,
+                    true,
+                    500,
+                    "Error al eliminar la imagen en Firebase"
+            );
+        }
+        workerRepository.deleteById(worker.getWorkerId());
+        return new Response<>("Trabajador eliminado", false, 200, "Trabajador eliminado con exito.");
+    }
+
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> updateWorkerProfilePic(Long workerId, MultipartFile workerProfilePic) throws IOException {

@@ -11,6 +11,6 @@ import lombok.Setter;
 @Getter
 public class ReviewDto {
     private Long orderId;
-    private String review;
+    private String reviewDescription;
     private Integer score;
 }
