@@ -115,11 +115,7 @@ public class CategoryService {
             firebaseStorageService.deleteFileFromFirebase(category.getServiceImageUrl(), "services-pics/");
         } catch (IOException e) {
             e.printStackTrace();
-            return new Response<>(
-                    null,
-                    true,
-                    500,
-                    "Error al eliminar la imagen en Firebase"
+            return new Response<>(null, true, 500, "Error al eliminar la imagen en Firebase"
             );
         }
         categoryRepository.deleteById(category.getServiceId());

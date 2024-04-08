@@ -16,7 +16,7 @@ public class PackageInfoDto {
     private Long packageId;
     private String packageName;
     private String packageDescription;
-    private Float packagePrice;
+    private Long packagePrice;
     private Boolean packageState;
     private Integer designatedHours;
     private Integer workersNumber;
