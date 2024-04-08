@@ -1,10 +1,9 @@
 package utez.edu.mx.orderapp.services.categories;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.gax.rpc.NotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,18 +74,18 @@ public class CategoryService {
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> insertCategory(String encryptedData, MultipartFile serviceImage) throws Exception{
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
-           CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
-           Category category = new Category();
-           category.setServiceName(categoryDto.getServiceName());
-           category.setServiceDescription(categoryDto.getServiceDescription());
-           category.setServiceQuote(categoryDto.getServiceQuote());
+        CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
+        Category category = new Category();
+        category.setServiceName(categoryDto.getServiceName());
+        category.setServiceDescription(categoryDto.getServiceDescription());
+        category.setServiceQuote(categoryDto.getServiceQuote());
 
-           if (serviceImage != null && !serviceImage.isEmpty()){
-               String imageUrl = firebaseStorageService.uploadFile(serviceImage, "services-pics/");
-               category.setServiceImageUrl(imageUrl);
-           }
-           categoryRepository.save(category);
-           return new Response<>("Guardado", false, 200, "El servicio ha sido agregado con exito");
+        if (serviceImage != null && !serviceImage.isEmpty()){
+            String imageUrl = firebaseStorageService.uploadFile(serviceImage, "services-pics/");
+            category.setServiceImageUrl(imageUrl);
+        }
+        categoryRepository.save(category);
+        return new Response<>("Guardado", false, 200, "El servicio ha sido agregado con exito");
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -95,7 +94,7 @@ public class CategoryService {
         CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
         Long categoryId = Long.parseLong(categoryDto.getServiceId());
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new UsernameNotFoundException("Categoria no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada"));
         category.setServiceName(categoryDto.getServiceName());
         category.setServiceDescription(categoryDto.getServiceDescription());
         category.setServiceQuote(categoryDto.getServiceQuote());
@@ -110,7 +109,7 @@ public class CategoryService {
         CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
         Long categoryId = Long.parseLong(categoryDto.getServiceId());
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new UsernameNotFoundException("Categoria no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada"));
         try {
             firebaseStorageService.deleteFileFromFirebase(category.getServiceImageUrl(), "services-pics/");
         } catch (IOException e) {

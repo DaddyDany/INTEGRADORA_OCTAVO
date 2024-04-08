@@ -12,9 +12,10 @@ import java.util.List;
 @Setter
 @Getter
 public class ComboDto {
+    private String comboId;
     private String comboName;
     private String comboDescription;
-    private Float comboPrice;
+    private Long comboPrice;
     private Integer comboDesignatedHours;
     private Integer comboWorkersNumber;
     private List<Long> packageIds;

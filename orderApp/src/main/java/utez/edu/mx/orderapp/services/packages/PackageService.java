@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.ImageInfoDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.PackageDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.PackageInfoDto;
@@ -36,7 +34,7 @@ public class PackageService {
     private final CategoryRepository categoryRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final EncryptionService encryptionService;
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public PackageService(PackageRepository packageRepository, ImagePackageRepository imagePackageRepository, FirebaseStorageService firebaseStorageService, CategoryRepository categoryRepository, EncryptionService encryptionService, ObjectMapper objectMapper){
@@ -49,16 +47,6 @@ public class PackageService {
     }
 
     @Transactional(readOnly = true)
-    public Response<List<Package>> getAll() {
-        return new Response<>(
-                this.packageRepository.findAll(),
-                false,
-                200,
-                "OK"
-        );
-    }
-
-    @Transactional(readOnly = true)
     public Response<Package> getOne(long id) {
         Optional<Package> aPackage = this.packageRepository.findById(id);
         return aPackage.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Package fetched successfully"))
@@ -68,20 +56,20 @@ public class PackageService {
     public Response<PackageInfoDto> getPackageWithImages(Long packageId) {
         return packageRepository.findById(packageId).map(aPackage -> {
             List<ImageInfoDto> imageInfoDtos = aPackage.getImagePackages().stream()
-                    .map(imagePackage -> new ImageInfoDto(imagePackage.getImagePackageId(), imagePackage.getImageUrl()))
+                    .map(imagePackage -> new ImageInfoDto(imagePackage.getImageUrl()))
                     .toList();
             PackageInfoDto packageInfoDto = new PackageInfoDto(
-                    aPackage.getPackageId(),
+                    String.valueOf(aPackage.getPackageId()), // Long a String
                     aPackage.getPackageName(),
                     aPackage.getPackageDescription(),
-                    aPackage.getPackagePrice(),
-                    aPackage.getPackageState(),
-                    aPackage.getDesignatedHours(),
-                    aPackage.getWorkersNumber(),
-                    aPackage.getCategory(),
-                    imageInfoDtos
+                    String.valueOf(aPackage.getPackagePrice()), // Long a String
+                    String.valueOf(aPackage.getPackageState()), // Boolean a String
+                    String.valueOf(aPackage.getDesignatedHours()), // Integer a String
+                    String.valueOf(aPackage.getWorkersNumber()), // Integer a String
+                    aPackage.getCategory().getServiceName(), // Suponiendo que getServiceName() devuelve el nombre de la categoría como String
+                    String.valueOf(aPackage.getCategory().getServiceId()),
+                    imageInfoDtos // Asumiendo que este ya es una List<ImageInfoDto> como esperado
             );
-
             return new Response<>(packageInfoDto, false, HttpStatus.OK.value(), "Package fetched successfully");
         }).orElseGet(() -> new Response<>(null, true, HttpStatus.NOT_FOUND.value(), "Package not found"));
     }
@@ -149,7 +137,7 @@ public class PackageService {
         PackageDto packageDto = objectMapper.readValue(decryptedDataJson, PackageDto.class);
         Long packageId = Long.parseLong(packageDto.getPackageId());
         Package aPackage = packageRepository.findById(packageId)
-                .orElseThrow(() -> new UsernameNotFoundException("Paquete no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Paquete no encontrado"));
         for (ImagePackage imagePackage : aPackage.getImagePackages()) {
             try {
                 firebaseStorageService.deleteFileFromFirebase(imagePackage.getImageUrl(), "package-images/");

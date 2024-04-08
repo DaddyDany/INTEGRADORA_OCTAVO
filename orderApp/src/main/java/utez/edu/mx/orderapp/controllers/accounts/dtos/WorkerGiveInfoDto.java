@@ -20,6 +20,7 @@ public class WorkerGiveInfoDto {
     private String workerProfilePicUrl;
 
     public WorkerGiveInfoDto(Worker worker) {
+        this.workerId = String.valueOf(worker.getWorkerId());
         this.workerName = worker.getWorkerName();
         this.workerFirstLastName = worker.getWorkerFirstLastName();
         this.workerSecondLastName = worker.getWorkerSecondLastName();

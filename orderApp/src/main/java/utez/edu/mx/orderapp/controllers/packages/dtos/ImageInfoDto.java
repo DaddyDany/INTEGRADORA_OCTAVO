@@ -8,10 +8,8 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ImageInfoDto {
-    private Long imagePackageId;
     private String imageUrl;
-    public ImageInfoDto(Long imagePackageId, String imageUrl) {
-        this.imagePackageId = imagePackageId;
+    public ImageInfoDto(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 }
