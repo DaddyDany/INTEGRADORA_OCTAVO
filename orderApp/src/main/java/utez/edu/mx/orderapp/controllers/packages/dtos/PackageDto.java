@@ -13,9 +13,10 @@ import java.util.List;
 @Setter
 @Getter
 public class PackageDto {
+    private String packageId;
     private String packageName;
     private String packageDescription;
-    private Float packagePrice;
+    private Long packagePrice;
     private Integer designatedHours;
     private Integer workersNumber;
     private Long categoryId;

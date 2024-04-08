@@ -19,12 +19,13 @@ public class AdminGiveInfoDto {
     private String accountStatus;
 
     public AdminGiveInfoDto(Administrator administrator) {
+        this.adminId = String.valueOf(administrator.getAdminId());
         this.adminName = administrator.getAdminName();
         this.adminFirstLastName = administrator.getAdminFirstLastName();
         this.adminSecondLastName = administrator.getAdminSecondLastName();
         this.adminEmail = administrator.getAdminEmail();
         this.adminCellphone = administrator.getAdminCellphone();
-        this.adminSecurityNumber = administrator.getAdminSecurityNumber().toString();
+        this.adminSecurityNumber = administrator.getAdminSecurityNumber();
         this.adminProfilePicUrl = administrator.getAdminProfilePicUrl();
         this.adminSalary = administrator.getAdminSalary().toString();
     }

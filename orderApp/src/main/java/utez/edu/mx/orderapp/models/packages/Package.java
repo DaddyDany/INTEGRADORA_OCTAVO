@@ -11,6 +11,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,16 +34,32 @@ public class Package {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "package_id")
     private Long packageId;
+
+    @NotNull(message = "El nombre no debe ser nulo")
+    @NotBlank(message = "El nombre no debe ir vacío")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "package_name")
     private String packageName;
+
+    @NotNull(message = "La descripción no debe ser nula")
+    @NotBlank(message = "La descripción no debe ir vacía")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(min = 50, max = 3000, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 3000 caracteres")
     @Column(name = "package_description")
     private String packageDescription;
+
+    @NotNull(message = "El precio no debe ser nulo")
+    @Max(value = 15000, message = "El precio no debe ser superior a 15000, dudo que alguien pague eso")
     @Column(name = "package_price")
-    private Float packagePrice;
+    private Long packagePrice;
     @Column(name = "package_state")
     private Boolean packageState;
+
+    @NotNull(message = "El las horas no deben ser nulas")
     @Column(name = "designated_hours")
     private Integer designatedHours;
+
+    @NotNull(message = "El número de trabajadores no debe ser nulo")
     @Column(name = "workers_number")
     private Integer workersNumber;
     @ManyToOne
@@ -55,7 +76,7 @@ public class Package {
     private List<ImagePackage> imagePackages;
 
 
-    public Package(String packageName, String packageDescription, Float packagePrice, Integer designatedHours, Integer workersNumber, Category category) {
+    public Package(String packageName, String packageDescription, Long packagePrice, Integer designatedHours, Integer workersNumber, Category category) {
         this.packageName = packageName;
         this.packageDescription = packageDescription;
         this.packagePrice = packagePrice;
@@ -63,5 +84,4 @@ public class Package {
         this.workersNumber = workersNumber;
         this.category = category;
     }
-
 }
