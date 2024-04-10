@@ -62,19 +62,14 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createOrder(@RequestBody OrderDto orderDto, Authentication authentication) {
+    public ResponseEntity<Response<String>> createOrder(@RequestBody OrderDto orderDto, Authentication authentication) throws Exception {
         String username = authentication.getName();
         CommonUser commonUser = commonUserRepository.findByUserEmail(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Long userId = commonUser.getCommonUserId();
         orderDto.setCommonUserId(userId);
-        Response<OrderResponseDto> response = orderService.createOrder(orderDto);
-
-        if (!response.isError()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response.getMessage());
-        }
+        Response<String> response = orderService.createOrder(orderDto);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/{id}")

@@ -53,6 +53,9 @@ public class Order {
     @Column(name = "order_type")
     private String orderType;
 
+    @Column(name = "session_id", unique = true)
+    private String sessionId;
+
     @Column(name = "order_total_hours")
     private Integer orderTotalHours;
 

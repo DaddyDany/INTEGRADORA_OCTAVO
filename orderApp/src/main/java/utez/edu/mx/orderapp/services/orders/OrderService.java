@@ -1,7 +1,12 @@
 package utez.edu.mx.orderapp.services.orders;
 
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderAcceptanceDto;
@@ -33,11 +38,10 @@ import java.util.Optional;
 @Service
 @Transactional
 public class OrderService {
-
+    @Value("${stripe.keys.secret}")
+    private String stripeSecretKey;
     private final OrderRepository orderRepository;
-
     private final CommonUserRepository commonUserRepository;
-
     private final PackageRepository packageRepository;
     private final ComboRepository comboRepository;
     private final WorkerRepository workerRepository;
@@ -67,12 +71,27 @@ public class OrderService {
     }
 
     @Transactional
-    public Response<OrderResponseDto> createOrder(OrderDto orderDto) {
+    public Response<String> createOrder(OrderDto orderDto) {
+
+        Stripe.apiKey = stripeSecretKey;
+        try {
+            Session session = Session.retrieve(orderDto.getSessionId());
+        } catch (StripeException e) {
+            return new Response<>(null, true, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session ID no válido o problema al comunicarse con Stripe: " + e.getMessage());
+        }
+
         try {
             CommonUser commonUser = commonUserRepository.findById(orderDto.getCommonUserId())
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
             Order order = new Order();
+            Optional<Order> existingOrder = orderRepository.findBySessionId(orderDto.getSessionId());
+
+            if (existingOrder.isPresent()) {
+                // Si ya existe una orden con ese sessionId, devuelve el estado HTTP 466 con el mensaje
+                return new Response<>("Mucho ojo", true, HttpStatus.FORBIDDEN.value(), "Tu orden ya fue registrada");
+            }
             order.setOrderDate(orderDto.getOrderDate());
+            order.setSessionId(orderDto.getSessionId());
             order.setOrderPlace(orderDto.getOrderPlace());
             order.setOrderTime(orderDto.getOrderTime());
             order.setCommonUser(commonUser);
@@ -111,26 +130,11 @@ public class OrderService {
                     order.getOrderCombos().add(orderCombo);
                 }
             }
-
             order.setOrderTotalPayment(totalPayment);
             order.setOrderTotalHours(totalHours);
             order.setOrderType(orderType);
-
             Order savedOrder = orderRepository.save(order);
-
-            OrderResponseDto responseDto = new OrderResponseDto(
-                    savedOrder.getOrderId(),
-                    savedOrder.getOrderDate(),
-                    savedOrder.getOrderState(),
-                    savedOrder.getOrderPlace(),
-                    savedOrder.getOrderTime(),
-                    savedOrder.getOrderTotalPayment(),
-                    savedOrder.getOrderPaymentState(),
-                    savedOrder.getOrderType(),
-                    savedOrder.getOrderTotalHours(),
-                    savedOrder.getCommonUser().getCommonUserId()
-            );
-            return new Response<>(responseDto, false, HttpStatus.CREATED.value(), "Orden creada con éxito");
+            return new Response<>("Registrada", false, HttpStatus.CREATED.value(), "Orden creada con éxito");
         } catch (Exception e) {
             return new Response<>(null, true, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error al crear la orden: " + e.getMessage());
         }

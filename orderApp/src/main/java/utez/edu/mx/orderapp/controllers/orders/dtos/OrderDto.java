@@ -24,6 +24,7 @@ public class OrderDto {
     private String orderPlace;
     private LocalDateTime orderTime;
     private Long commonUserId;
+    private String sessionId;
     private List<Long> packagesIds = new ArrayList<>();
     private List<Long> combosIds = new ArrayList<>();
 

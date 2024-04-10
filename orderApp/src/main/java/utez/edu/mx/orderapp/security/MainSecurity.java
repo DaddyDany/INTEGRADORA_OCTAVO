@@ -31,7 +31,9 @@ public class MainSecurity {
             "/api/packages/**",
             "/api/combos/**",
             "/api/orders/**",
-            "/api/reviews/**"};
+            "/api/reviews/**",
+            "/api/payments/**"
+    };
     private final UserDetailsServiceImpl service;
 
     public MainSecurity(UserDetailsServiceImpl service) {
