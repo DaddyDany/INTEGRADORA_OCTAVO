@@ -117,6 +117,6 @@ private final PackageRepository packageRepository;
     @DeleteMapping("/delete-package")
     public ResponseEntity<Response<String>> delete(@RequestBody String encryptedData) throws Exception{
         Response<String> response = packageService.deletePackage(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 }

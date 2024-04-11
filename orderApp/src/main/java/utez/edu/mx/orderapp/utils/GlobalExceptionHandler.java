@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
-        ErrorResponse errorResponse = new ErrorResponse("Error de integridad de la informacion, es posible que alguno de los datos unicos ya este en uso", HttpStatus.CONFLICT.value());
+        ErrorResponse errorResponse = new ErrorResponse("Error de integridad de la información", HttpStatus.CONFLICT.value());
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 

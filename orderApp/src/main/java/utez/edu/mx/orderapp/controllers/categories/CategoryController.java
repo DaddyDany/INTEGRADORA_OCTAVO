@@ -83,6 +83,6 @@ public class CategoryController {
     @DeleteMapping("/delete-service")
     public ResponseEntity<Response<String>> delete(@RequestBody String encryptedData) throws Exception{
         Response<String> response = categoryService.deleteCategory(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 }
