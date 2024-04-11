@@ -11,6 +11,7 @@ import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.firebaseintegrations.FirebaseStorageService;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
+import utez.edu.mx.orderapp.repositories.packages.PackageRepository;
 import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
@@ -28,14 +29,16 @@ public class CategoryService {
     private final FirebaseStorageService firebaseStorageService;
     private final ObjectMapper objectMapper;
     private final EncryptionService encryptionService;
+    private final PackageRepository packageRepository;
 
 
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper){
+    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper, PackageRepository packageRepository){
         this.categoryRepository = categoryRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.encryptionService = encryptionService;
         this.objectMapper = objectMapper;
+        this.packageRepository = packageRepository;
     }
 
 
@@ -110,6 +113,11 @@ public class CategoryService {
         Long categoryId = Long.parseLong(categoryDto.getServiceId());
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new EntityNotFoundException("Categoria no encontrada"));
+
+        if (!category.getPackages().isEmpty()) {
+            return new Response<>(null, true, 400, "No se puede eliminar la categoría porque tiene paquetes asociados.");
+        }
+
         try {
             firebaseStorageService.deleteFileFromFirebase(category.getServiceImageUrl(), "services-pics/");
         } catch (IOException e) {
@@ -117,6 +125,8 @@ public class CategoryService {
             return new Response<>(null, true, 500, "Error al eliminar la imagen en Firebase"
             );
         }
+
+
         categoryRepository.deleteById(category.getServiceId());
         return new Response<>("Servicio eliminado", false, 200, "Servicio eliminado con exito.");
     }

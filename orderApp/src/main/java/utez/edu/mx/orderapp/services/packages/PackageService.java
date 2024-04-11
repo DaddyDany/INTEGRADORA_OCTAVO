@@ -138,6 +138,11 @@ public class PackageService {
         Long packageId = Long.parseLong(packageDto.getPackageId());
         Package aPackage = packageRepository.findById(packageId)
                 .orElseThrow(() -> new EntityNotFoundException("Paquete no encontrado"));
+
+        if (!aPackage.getOrderPackages().isEmpty() && !aPackage.getPackageCombos().isEmpty()) {
+            return new Response<>(null, true, 400, "No se puede eliminar el paquete porque pertenece a algun combo o tiene ordenes registradas.");
+        }
+
         for (ImagePackage imagePackage : aPackage.getImagePackages()) {
             try {
                 firebaseStorageService.deleteFileFromFirebase(imagePackage.getImageUrl(), "package-images/");

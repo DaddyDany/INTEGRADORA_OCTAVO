@@ -7,7 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -90,11 +89,12 @@ public class AccountController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
-    @PostMapping("/update-admin/profile-pic/{adminId}")
-    public ResponseEntity<Response<String>> updateAdminProfilePic(@PathVariable Long adminId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
-        Response<String> response = accountService.updateAdminProfilePic(adminId , profilePic);
+    @PostMapping("/update-admin/profile-pic")
+    public ResponseEntity<Response<String>> updateAdminProfilePic(@RequestPart("data") String encryptedData, @RequestParam(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
+        Response<String> response = accountService.updateAdminProfilePic(encryptedData , profilePic);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
+
 
     @PostMapping("/confirm-account")
     public ResponseEntity<String> confirmAccount(@RequestParam("token") String token) {
@@ -178,7 +178,7 @@ public class AccountController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<Object> getUserProfile(Authentication authentication) {
+    public ResponseEntity<Object> getUserProfile(Authentication authentication) throws Exception {
         String username = authentication.getName();
         String role = authentication.getAuthorities().stream()
                 .findFirst()

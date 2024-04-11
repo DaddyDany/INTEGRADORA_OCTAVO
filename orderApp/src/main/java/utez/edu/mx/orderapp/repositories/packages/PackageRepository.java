@@ -13,4 +13,5 @@ public interface PackageRepository extends JpaRepository<Package, Long> {
     boolean existsByPackageName(String packageName);
     @Query("select p from Package p where p.category.serviceId = :serviceId")
     List<Package> findByServiceId(@Param("serviceId") Long serviceId);
+
 }

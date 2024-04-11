@@ -175,7 +175,6 @@ public class AccountService {
     @Transactional(rollbackFor = {Exception.class})
     public Response<Long> createWorkerAccount(String encryptedData, MultipartFile workerProfilePic) throws Exception {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
-        System.out.println(decryptedDataJson);
         WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
         Worker worker = new Worker();
         worker.setWorkerEmail(workerDto.getWorkerEmail());
@@ -258,9 +257,12 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<String> updateAdminProfilePic(Long adminId, MultipartFile adminProfilePic) throws IOException {
-        Administrator administrator = administratorRepository.findById(adminId)
+    public Response<String> updateAdminProfilePic(String encryptedData, MultipartFile adminProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        AdministratorDto administratorDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
+        Administrator administrator = administratorRepository.findById(Long.parseLong(administratorDto.getAdminId()))
                 .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+
         if (!adminProfilePic.isEmpty()) {
             if (administrator.getAdminProfilePicUrl() != null && !administrator.getAdminProfilePicUrl().isEmpty()) {
                 try {
@@ -270,6 +272,7 @@ public class AccountService {
                     return new Response<>(true, 500, "Error al eliminar la foto de perfil anterior: " + e.getMessage());
                 }
             }
+
             String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, "admins-profile-pics/");
             administrator.setAdminProfilePicUrl(imageUrl);
             administratorRepository.save(administrator);
@@ -411,12 +414,12 @@ public class AccountService {
         }
     }
 
-    public Object getLoggedUserProfile(String username, String role) {
+    public Object getLoggedUserProfile(String username, String role) throws Exception {
         switch (role) {
             case ROLE_ADMIN -> {
                 Administrator admin = administratorRepository.findByAdminEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Admin no encontrado"));
-                return new AdminGiveInfoDto(admin);
+                return new AdminGiveInfoDto(admin).encryptFields(encryptionService);
             }
             case ROLE_WORKER -> {
                 Worker worker = workerRepository.findByWorkerEmail(username)
