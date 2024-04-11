@@ -39,7 +39,7 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
     private final CommonUserRepository commonUserRepository;
-private final WorkerRepository workerRepository;
+    private final WorkerRepository workerRepository;
     private final AdministratorRepository administratorRepository;
     @Autowired
     public AccountController(AccountService accountService, CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository, WorkerRepository workerRepository){
@@ -49,8 +49,8 @@ private final WorkerRepository workerRepository;
         this.workerRepository = workerRepository;
     }
     @PostMapping("/create-common")
-    public ResponseEntity<Response<Long>> createCommonUserAccount(@ModelAttribute CommonUserDto commonUserDto){
-        Response<Long> response = accountService.createCommonUserAccount(commonUserDto);
+    public ResponseEntity<Response<String>> createCommonUserAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "userProfilePic", required = false) MultipartFile userProfilePic) throws Exception{
+        Response<String> response = accountService.createCommonUserAccount(encryptedData, userProfilePic);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 

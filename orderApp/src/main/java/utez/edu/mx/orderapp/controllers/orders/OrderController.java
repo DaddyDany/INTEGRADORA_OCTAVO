@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderAcceptanceDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
@@ -43,7 +42,7 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<List<OrderInfoAdminDto>> getAll() {
-        Response<List<OrderInfoAdminDto>> response = this.orderService.getAll();
+        Response<List<OrderInfoAdminDto>> response = orderService.getAll();
         if (response.isSuccess()){
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         }else{
@@ -53,7 +52,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOne(@PathVariable("id") Long id) {
-        Response<Order> response = this.orderService.getOne(id);
+        Response<Order> response = orderService.getOne(id);
         if (response.isSuccess()){
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         }else{
@@ -62,32 +61,22 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createOrder(@RequestBody OrderDto orderDto, Authentication authentication) {
+    public ResponseEntity<Response<String>> createOrder(@RequestBody String encryptedData, Authentication authentication) throws Exception {
         String username = authentication.getName();
         CommonUser commonUser = commonUserRepository.findByUserEmail(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Long userId = commonUser.getCommonUserId();
-        orderDto.setCommonUserId(userId);
-        Response<OrderResponseDto> response = orderService.createOrder(orderDto);
-
-        if (!response.isError()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response.getMessage());
-        }
+        //orderDto.setCommonUserId(userId);
+        Response<String> response = orderService.createOrder(encryptedData, userId);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Object> update(@PathVariable("id") Long id, @RequestBody OrderDto orderDto) {
-        // Primero, encuentra el CommonUser basado en commonUserId del DTO
         CommonUser commonUser = commonUserRepository.findById(orderDto.getCommonUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-
-        // Luego, usa ese CommonUser para construir la Order
         Order order = orderDto.toOrder(commonUser);
         order.setOrderId(id);
-
-        // Procesa la actualización con el servicio
         Response<Order> response = this.orderService.updateOrder(order);
         if (response.isSuccess()){
             return ResponseEntity.ok(response.getData());
@@ -96,34 +85,22 @@ public class OrderController {
         }
     }
 
-    @PatchMapping("/decline/{id}")
-    public ResponseEntity<String> declineOrder(@PathVariable Long id) {
-        try {
-            orderService.declineOrder(id);
-            return ResponseEntity.ok().body("Orden declinada con éxito");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @PatchMapping("/decline")
+    public ResponseEntity<Response<String>> declineOrder(@RequestBody String encryptedData) throws Exception {
+        Response<String> response = orderService.declineOrder(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PatchMapping("/accept-and-assign")
-    public ResponseEntity<Response<String>> acceptAndAssignOrder(@RequestBody OrderAcceptanceDto orderAcceptanceDto) {
-        Response<String> response = orderService.acceptAndAssignWorkers(orderAcceptanceDto);
-        if (!response.isError()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(response.getStatus()).body(response);
-        }
+    public ResponseEntity<Response<String>> acceptAndAssignOrder(@RequestBody String encryptedData) throws Exception {
+        Response<String> response = orderService.acceptAndAssignWorkers(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
-    @PatchMapping("/complete/{id}")
-    public ResponseEntity<String> completeOrder(@PathVariable Long id) {
-        try {
-            orderService.completeOrder(id);
-            return ResponseEntity.ok().body("Orden completada con éxito");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @PatchMapping("/complete")
+    public ResponseEntity<Response<String>> markAsOrderCompleted(@RequestBody String encryptedData) throws Exception {
+        Response<String> response = orderService.completeOrder(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @DeleteMapping("/{id}")

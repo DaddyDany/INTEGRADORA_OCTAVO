@@ -36,4 +36,8 @@ public class OrderPackage {
     public OrderPackage() {
         //Constructor vacio
     }
+
+    public Package getPackage() {
+        return aPackage;
+    }
 }

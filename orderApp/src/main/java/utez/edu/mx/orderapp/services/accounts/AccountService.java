@@ -69,44 +69,6 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> createCommonUserAccount(CommonUserDto commonUserDto) {
-        try {
-            CommonUser commonUser = new CommonUser();
-            commonUser.setUserCellphone(commonUserDto.getUserCellphone());
-            commonUser.setUserEmail(commonUserDto.getUserEmail());
-            commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
-            commonUser.setUserName(commonUserDto.getUserName());
-            if (commonUser.getUserPassword() == null || commonUser.getUserPassword().isEmpty()){
-                throw new IllegalArgumentException("La contraseña no puede estar vacía");
-            }
-            commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
-            commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
-
-            if (commonUserDto.getUserProfilePic() != null && !commonUserDto.getUserProfilePic().isEmpty()) {
-                String imageUrl = firebaseStorageService.uploadFile(commonUserDto.getUserProfilePic(), "common-users-profile-pics/");
-                commonUser.setUserProfilePicUrl(imageUrl);
-            }
-
-            Role role = roleRepository.findByRoleName(ROLE_COMMON_USER)
-                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
-
-            commonUser.setRole(role);
-            commonUser.setAccountStatus("Sin confirmar");
-            String confirmationCode = String.format("%06d", new Random().nextInt(999999));
-            commonUser.setConfirmationCode(confirmationCode);
-            commonUser.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
-            commonUser = commonUserRepository.save(commonUser);
-            String emailContent = "Tu código de confirmación es: " + confirmationCode;
-            emailService.sendConfirmationEmail(commonUser.getUserEmail(), "Confirmación de tu cuenta", emailContent);
-            return new Response<>(commonUser.getCommonUserId(), false, 200, "La cuenta de usuario ha sido creada con éxito. Revisa tu correo para confirmarla.");
-        } catch (RuntimeException e) {
-            return new Response<>(true, 200, "Hubo un error creando la cuenta de usuario: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Transactional(rollbackFor = {SQLException.class})
     public Response<Long> updateCommonUserInfo(Long userId, CommonUserDto commonUserDto) {
         CommonUser commonUser = commonUserRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
@@ -139,6 +101,37 @@ public class AccountService {
         } else {
             return new Response<>(true, 400, "La foto de perfil no puede estar vacía.");
         }
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> createCommonUserAccount(String encryptedData, MultipartFile userProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        CommonUserDto commonUserDto = objectMapper.readValue(decryptedDataJson, CommonUserDto.class);
+        CommonUser commonUser = new CommonUser();
+        commonUser.setUserCellphone(commonUserDto.getUserCellphone());
+        commonUser.setUserEmail(commonUserDto.getUserEmail());
+        commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
+        commonUser.setUserName(commonUserDto.getUserName());
+        if (commonUserDto.getUserPassword() == null || commonUserDto.getUserPassword().isEmpty()){
+            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+        }
+        commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
+        commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
+        if (userProfilePic != null && !userProfilePic.isEmpty()) {
+            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, "common-users-profile-pics/");
+            commonUser.setUserProfilePicUrl(imageUrl);
+        }
+        Role role = roleRepository.findByRoleName(ROLE_COMMON_USER)
+                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
+        commonUser.setRole(role);
+        commonUser.setAccountStatus("Sin confirmar");
+        String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+        commonUser.setConfirmationCode(confirmationCode);
+        commonUser.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
+        commonUserRepository.save(commonUser);
+        String emailContent = "Tu código de confirmación es: " + confirmationCode;
+        emailService.sendConfirmationEmail(commonUser.getUserEmail(), "Confirmación de tu cuenta", emailContent);
+        return new Response<>("Creado", false, 200, "La cuenta de usuario ha sido creada con éxito. Revisa tu correo para confirmarla.");
     }
 
     @Transactional(rollbackFor = {Exception.class})

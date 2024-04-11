@@ -10,9 +10,8 @@ import java.util.List;
 
 @Repository
 public interface WorkerOrderRepository extends JpaRepository<WorkerOrder, Long> {
-    @Query("SELECT wo FROM WorkerOrder wo WHERE wo.worker.workerId = :workerId AND FUNCTION('DATE', wo.startTime) = :date")
-    List<WorkerOrder> findByWorkerIdAndDate(Long workerId, LocalDate date);
-
-
-
+    List<WorkerOrder> findByWorkerOrderId(Long orderId);
+    @Query("SELECT wo FROM WorkerOrder wo WHERE wo.worker.workerId = :workerId AND FUNCTION('DATE', wo.order.orderDate) = :date")
+    List<WorkerOrder> findByWorkerIdAndOrderDate(Long workerId, LocalDate date);
+    List<WorkerOrder> findByOrderOrderId(Long orderId);
 }

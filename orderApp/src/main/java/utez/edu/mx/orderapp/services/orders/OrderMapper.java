@@ -1,38 +1,102 @@
 package utez.edu.mx.orderapp.services.orders;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.orders.Order;
+import utez.edu.mx.orderapp.repositories.orders.OrderPackageRepository;
+import utez.edu.mx.orderapp.repositories.orders.WorkerOrderRepository;
+import utez.edu.mx.orderapp.utils.EncryptionService;
+
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrderMapper {
 
-    public static OrderResponseDto toOrderResponseDto(Order order) {
+    private final EncryptionService encryptionService;
+    private final OrderPackageRepository orderPackageRepository;
+    private final WorkerOrderRepository workerOrderRepository;
+
+    @Autowired
+    public OrderMapper(EncryptionService encryptionService, OrderPackageRepository orderPackageRepository, WorkerOrderRepository workerOrderRepository) {
+        this.encryptionService = encryptionService;
+        this.orderPackageRepository = orderPackageRepository;
+        this.workerOrderRepository = workerOrderRepository;
+    }
+
+    public OrderResponseDto toOrderResponseDto(Order order) throws Exception {
         OrderResponseDto dto = new OrderResponseDto();
-        dto.setOrderId(order.getOrderId());
-        dto.setOrderDate(order.getOrderDate());
-        dto.setOrderState(order.getOrderState());
-        dto.setOrderPlace(order.getOrderPlace());
-        dto.setOrderTime(order.getOrderTime());
-        dto.setOrderTotalPayment(order.getOrderTotalPayment());
-        dto.setOrderPaymentState(order.getOrderPaymentState());
-        dto.setOrderType(order.getOrderType());
-        dto.setOrderTotalHours(order.getOrderTotalHours());
-        dto.setCommonUserId(order.getCommonUser().getCommonUserId());
+
+        String id = String.valueOf(order.getOrderId());
+        dto.setOrderId(encryptionService.encrypt(id));
+
+        String date = String.valueOf(order.getOrderDate());
+        dto.setOrderDate(encryptionService.encrypt(date));
+
+        dto.setOrderState(encryptionService.encrypt(order.getOrderState()));
+        dto.setOrderPlace(encryptionService.encrypt(order.getOrderPlace()));
+
+        String time = String.valueOf(order.getOrderTime());
+        dto.setOrderTime(encryptionService.encrypt(time));
+
+        String totalPayment = String.valueOf(order.getOrderTotalPayment());
+        dto.setOrderTotalPayment(encryptionService.encrypt(totalPayment));
+
+        dto.setOrderPaymentState(encryptionService.encrypt(order.getOrderPaymentState()));
+        dto.setOrderType(encryptionService.encrypt(order.getOrderType()));
+
+        String totalHours = String.valueOf(order.getOrderTotalHours());
+        dto.setOrderTotalHours(encryptionService.encrypt(totalHours));
+
+        String totalWorkers = String.valueOf(order.getOrderTotalWokers());
+        dto.setOrderTotalWorkers(encryptionService.encrypt(totalWorkers));
+
+        String userId = String.valueOf(order.getCommonUser().getCommonUserId());
+        dto.setCommonUserId(encryptionService.encrypt(userId));
         return dto;
     }
 
-    public static OrderInfoAdminDto toOrderInfoAdminDto(Order order) {
+    public OrderInfoAdminDto toOrderInfoAdminDto(Order order) throws Exception {
         OrderResponseDto baseDto = toOrderResponseDto(order);
         OrderInfoAdminDto adminDto = new OrderInfoAdminDto();
+
+        List<String> encryptedPackageNames = orderPackageRepository.findByOrderOrderId(order.getOrderId())
+                .stream()
+                .map(orderPackage -> {
+                    try {
+                        return encryptionService.encrypt(orderPackage.getPackage().getPackageName());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+        adminDto.setPackageNames(encryptedPackageNames);
+
+        List<String> encryptedWorkerNames = workerOrderRepository.findByOrderOrderId(order.getOrderId())
+                .stream()
+                .map(workerOrder -> {
+                    try {
+                        return encryptionService.encrypt(workerOrder.getWorker().getWorkerName());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        adminDto.setWorkerNames(encryptedWorkerNames);
+
         BeanUtils.copyProperties(baseDto, adminDto);
-        adminDto.setUserName(order.getCommonUser().getUserName());
-        adminDto.setUserFirstLastName(order.getCommonUser().getUserFirstLastName());
-        adminDto.setUserSecondLastName(order.getCommonUser().getUserSecondLastName());
-        adminDto.setUserEmail(order.getCommonUser().getUserEmail());
-        adminDto.setUserCellphone(order.getCommonUser().getUserCellphone());
+        adminDto.setUserName(encryptionService.encrypt(order.getCommonUser().getUserName()));
+        adminDto.setUserFirstLastName(encryptionService.encrypt(order.getCommonUser().getUserFirstLastName()));
+        adminDto.setUserSecondLastName(encryptionService.encrypt(order.getCommonUser().getUserSecondLastName()));
+        adminDto.setUserEmail(encryptionService.encrypt(order.getCommonUser().getUserEmail()));
+        adminDto.setUserCellphone(encryptionService.encrypt(order.getCommonUser().getUserCellphone()));
         return adminDto;
     }
 }

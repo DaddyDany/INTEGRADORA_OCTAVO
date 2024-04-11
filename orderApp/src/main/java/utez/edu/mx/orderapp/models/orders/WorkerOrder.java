@@ -13,6 +13,7 @@ import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.Worker;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -36,8 +37,8 @@ public class WorkerOrder {
     private Integer assignedHours;
 
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    private LocalTime endTime;
 }
