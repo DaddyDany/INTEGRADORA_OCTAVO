@@ -13,14 +13,15 @@ import java.util.Date;
 @Setter
 @Getter
 public class OrderResponseDto {
-    private Long orderId;
-    private Date orderDate;
+    private String orderId;
+    private String orderDate;
     private String orderState;
     private String orderPlace;
-    private LocalDateTime orderTime;
-    private Float orderTotalPayment;
+    private String orderTime;
+    private String orderTotalPayment;
     private String orderPaymentState;
     private String orderType;
-    private Integer orderTotalHours;
-    private Long commonUserId;
+    private String orderTotalHours;
+    private String orderTotalWorkers;
+    private String commonUserId;
 }

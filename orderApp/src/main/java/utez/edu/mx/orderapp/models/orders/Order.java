@@ -16,7 +16,10 @@ import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.reviews.Review;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +36,7 @@ public class Order {
     private Long orderId;
 
     @Column(name = "order_date")
-    private Date orderDate;
+    private LocalDate orderDate;
 
     @Column(name = "order_state")
     private String orderState;
@@ -42,7 +45,7 @@ public class Order {
     private String orderPlace;
 
     @Column(name = "order_time")
-    private LocalDateTime orderTime;
+    private LocalTime orderTime;
 
     @Column(name = "order_total_payment")
     private Float orderTotalPayment;
@@ -58,6 +61,9 @@ public class Order {
 
     @Column(name = "order_total_hours")
     private Integer orderTotalHours;
+
+    @Column(name = "order_total_workers")
+    private Integer orderTotalWokers;
 
     @ManyToOne
     @JoinColumn(name = "common_user_id")
@@ -81,7 +87,7 @@ public class Order {
         // Constructor vacío necesario para JPA
     }
 
-    public Order(Date orderDate, String orderPlace, LocalDateTime orderTime, CommonUser commonUser) {
+    public Order(LocalDate orderDate, String orderPlace, LocalTime orderTime, CommonUser commonUser) {
         this.orderDate = orderDate;
         this.orderPlace = orderPlace;
         this.orderTime = orderTime;
