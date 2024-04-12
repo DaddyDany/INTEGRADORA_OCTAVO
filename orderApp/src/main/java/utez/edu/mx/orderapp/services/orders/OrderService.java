@@ -72,7 +72,6 @@ public class OrderService {
             try {
                 return this.orderMapper.toOrderInfoAdminDto(order);
             } catch (Exception e) {
-                System.err.println("Error al convertir el pedido a DTO: " + e.getMessage());
                 return null;
             }
         }).filter(Objects::nonNull).toList();
@@ -91,13 +90,13 @@ public class OrderService {
         String correctedData = encryptedData.replace("\"", "");
         String decryptedDataJson = encryptionService.decrypt(correctedData);
         OrderDto orderDto = objectMapper.readValue(decryptedDataJson, OrderDto.class);
+
         Stripe.apiKey = stripeSecretKey;
         try {
             Session.retrieve(orderDto.getSessionId());
         } catch (StripeException e) {
             return new Response<>(null, true, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Session ID no válido o problema al comunicarse con Stripe: " + e.getMessage());
         }
-
 
         try {
             CommonUser commonUser = commonUserRepository.findById(userId)
@@ -108,7 +107,6 @@ public class OrderService {
             if (existingOrder.isPresent()) {
                 return new Response<>("Mucho ojo", true, HttpStatus.FORBIDDEN.value(), "Tu orden ya fue registrada");
             }
-
             order.setOrderDate(orderDto.getOrderDate());
             order.setSessionId(orderDto.getSessionId());
             order.setOrderPlace(orderDto.getOrderPlace());
@@ -116,11 +114,9 @@ public class OrderService {
             order.setCommonUser(commonUser);
             order.setOrderState("Pendiente");
             order.setOrderPaymentState("Pendiente");
-
             float totalPayment = 0;
             int totalHours = 0;
             int totalWorkers = 0;
-
             String orderType = "Orden de paquete personalizado";
             if (!orderDto.getPackagesIds().isEmpty()) {
                 if (orderDto.getPackagesIds().size() > 1){
@@ -139,13 +135,13 @@ public class OrderService {
                 }
                 orderType = orderDto.getPackagesIds().size() == 1 ? "Orden de paquete individual" : "Orden de paquete personalizado";
             }
-
             if (!orderDto.getCombosIds().isEmpty()) {
                 orderType = "Orden de combo";
                 for (Long comboId : orderDto.getCombosIds()){
                     Combo combo = comboRepository.findById(comboId)
                             .orElseThrow(() -> new RuntimeException("Combo no encontrado"));
                     totalPayment += combo.getComboPrice();
+                    totalWorkers += combo.getComboWorkersNumber();
                     if (orderDto.getCombosIds().size() == 1){
                         totalHours = combo.getComboDesignatedHours();
                     }
@@ -171,6 +167,12 @@ public class OrderService {
         OrderDto orderDto = objectMapper.readValue(decryptedDataJson, OrderDto.class);
         Order order = orderRepository.findById(Long.parseLong(orderDto.getOrderId()))
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        if (Objects.equals(order.getOrderState(), "Declinada")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido declinada, no hace falta hacerlo dos veces.");
+        }
+        if (Objects.equals(order.getOrderState(), "Orden completada :)")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido completada, no puedes marcarla como declinada.");
+        }
         Stripe.apiKey = stripeSecretKey;
         try {
             Session session = Session.retrieve(order.getSessionId());
@@ -196,10 +198,21 @@ public class OrderService {
         String decryptedDataJson = encryptionService.decrypt(correctedData);
         OrderAcceptanceDto orderAcceptanceDto = objectMapper.readValue(decryptedDataJson, OrderAcceptanceDto.class);
         Optional<Order> orderOptional = orderRepository.findById(orderAcceptanceDto.getOrderId());
+
         if (orderOptional.isEmpty()) {
             return new Response<>(null, true, 404, "Orden no encontrada.");
         }
 
+        if (Objects.equals(orderOptional.get().getOrderState(), "Declinada")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido declinada, no puedes aceptarla ahora.");
+        }
+
+        if (Objects.equals(orderOptional.get().getOrderState(), "Aceptada")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido aceptada, no hace falta hacerlo dos veces.");
+        }
+        if (Objects.equals(orderOptional.get().getOrderState(), "Orden completada :)")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido completada, no puedes marcarla como aceptada nuevamente.");
+        }
         Order order = orderOptional.get();
         LocalDate orderDate = order.getOrderDate();
         LocalTime orderStartTime = order.getOrderTime();
@@ -274,6 +287,16 @@ public class OrderService {
         OrderDto orderDto = objectMapper.readValue(decryptedDataJson, OrderDto.class);
         Order order = orderRepository.findById(Long.parseLong(orderDto.getOrderId()))
                 .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+        if (Objects.equals(order.getOrderState(), "Orden completada :)")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido servida, no la marques dos veces.");
+        }
+        if (Objects.equals(order.getOrderState(), "Declinada")) {
+            return new Response<>(null, true, 400, "La orden ya ha sido declinada, no puedes marcarla como servida.");
+        }
+        if (Objects.equals(order.getOrderState(), "Pendiente")) {
+            return new Response<>(null, true, 400, "La orden debe ser aceptada primero");
+        }
+
         order.setOrderState("Orden completada :)");
         orderRepository.save(order);
         return new Response<>("Completada", false, HttpStatus.CREATED.value(), "La orden ha sido marcada como completada con exito");
@@ -320,9 +343,8 @@ public class OrderService {
         return orders.stream()
                 .map(order -> {
                     try {
-                        return this.orderMapper.toOrderResponseDto(order); // Usa la instancia inyectada
+                        return this.orderMapper.toOrderResponseDto(order);
                     } catch (Exception e) {
-                        System.err.println("Error al convertir el pedido a DTO: " + e.getMessage());
                         return null;
                     }
                 })

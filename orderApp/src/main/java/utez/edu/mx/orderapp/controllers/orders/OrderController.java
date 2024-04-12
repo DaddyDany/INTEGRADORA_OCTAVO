@@ -66,7 +66,6 @@ public class OrderController {
         CommonUser commonUser = commonUserRepository.findByUserEmail(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Long userId = commonUser.getCommonUserId();
-        //orderDto.setCommonUserId(userId);
         Response<String> response = orderService.createOrder(encryptedData, userId);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }

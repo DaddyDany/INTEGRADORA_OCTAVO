@@ -65,7 +65,6 @@ public class ComboService {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         ComboDto comboDto = objectMapper.readValue(decryptedDataJson, ComboDto.class);
         Combo combo = new Combo();
-        System.out.println(combo);
         combo.setComboName(comboDto.getComboName());
         combo.setComboDescription(comboDto.getComboDescription());
         combo.setComboPrice(comboDto.getComboPrice());

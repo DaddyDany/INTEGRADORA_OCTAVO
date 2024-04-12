@@ -2,10 +2,8 @@ package utez.edu.mx.orderapp.services.externals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.Stripe;
-import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import utez.edu.mx.orderapp.controllers.orders.dtos.ProductDetailsDto;
@@ -17,24 +15,13 @@ import java.util.List;
 public class StripeService {
     @Value("${stripe.keys.secret}")
     private String stripeSecretKey;
-    private final ObjectMapper objectMapper;
-
-
-    @Autowired
-    public StripeService(ObjectMapper objectMapper){
-        this.objectMapper = objectMapper;
-    }
 
     public String createCheckoutSessionFromEncodedData(String encData) throws Exception {
         Stripe.apiKey = stripeSecretKey;
-
         ObjectMapper objectMapper = new ObjectMapper();
         ProductDetailsDto productDetails = objectMapper.readValue(encData, ProductDetailsDto.class);
-
         Long priceInCents = productDetails.getTotalPrice() * 100;
-
         List<SessionCreateParams.LineItem> items = new ArrayList<>();
-
         SessionCreateParams.LineItem lineItem = SessionCreateParams.LineItem.builder()
                 .setQuantity(1L)
                 .setPriceData(SessionCreateParams.LineItem.PriceData.builder()

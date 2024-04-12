@@ -29,16 +29,13 @@ public class CategoryService {
     private final FirebaseStorageService firebaseStorageService;
     private final ObjectMapper objectMapper;
     private final EncryptionService encryptionService;
-    private final PackageRepository packageRepository;
-
-
+    
     @Autowired
-    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper, PackageRepository packageRepository){
+    public CategoryService(CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper){
         this.categoryRepository = categoryRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.encryptionService = encryptionService;
         this.objectMapper = objectMapper;
-        this.packageRepository = packageRepository;
     }
 
 

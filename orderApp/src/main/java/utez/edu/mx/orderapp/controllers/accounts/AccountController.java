@@ -40,6 +40,9 @@ public class AccountController {
     private final CommonUserRepository commonUserRepository;
     private final WorkerRepository workerRepository;
     private final AdministratorRepository administratorRepository;
+    private static final String INVALID_TOKEN = "Token no valido o expirado";
+    private static final String CONFIRMED = "Confirmada";
+
     @Autowired
     public AccountController(AccountService accountService, CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository, WorkerRepository workerRepository){
         this.accountService = accountService;
@@ -99,42 +102,42 @@ public class AccountController {
     @PostMapping("/confirm-account")
     public ResponseEntity<String> confirmAccount(@RequestParam("token") String token) {
         CommonUser user = commonUserRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+                .orElseThrow(() -> new RuntimeException(INVALID_TOKEN));
 
         if (LocalDateTime.now().isBefore(user.getConfirmationCodeExpiry())) {
-            user.setAccountStatus("Confirmada");
+            user.setAccountStatus(CONFIRMED);
             commonUserRepository.save(user);
             return ResponseEntity.ok("Cuenta confirmada con exito.");
         } else {
-            return ResponseEntity.badRequest().body("Token no valido o expirado");
+            return ResponseEntity.badRequest().body(INVALID_TOKEN);
         }
     }
 
     @PostMapping("/confirm-worker-account")
     public ResponseEntity<String> confirmWorkerAccount(@RequestParam("token") String token) {
         Worker worker = workerRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+                .orElseThrow(() -> new RuntimeException(INVALID_TOKEN));
 
         if (LocalDateTime.now().isBefore(worker.getConfirmationCodeExpiry())) {
-            worker.setAccountStatus("Confirmada");
+            worker.setAccountStatus(CONFIRMED);
             workerRepository.save(worker);
             return ResponseEntity.ok("Cuenta de trabajador confirmada con exito.");
         } else {
-            return ResponseEntity.badRequest().body("Token no valido o expirado");
+            return ResponseEntity.badRequest().body(INVALID_TOKEN);
         }
     }
 
     @PostMapping("/confirm-admin-account")
     public ResponseEntity<String> confirmAdminAccount(@RequestParam("token") String token) {
         Administrator admin = administratorRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+                .orElseThrow(() -> new RuntimeException(INVALID_TOKEN));
 
         if (LocalDateTime.now().isBefore(admin.getConfirmationCodeExpiry())) {
-            admin.setAccountStatus("Confirmada");
+            admin.setAccountStatus(CONFIRMED);
             administratorRepository.save(admin);
             return ResponseEntity.ok("Cuenta de administrador confirmada con éxito.");
         } else {
-            return ResponseEntity.badRequest().body("Token no valido o expirado");
+            return ResponseEntity.badRequest().body(INVALID_TOKEN);
         }
     }
 

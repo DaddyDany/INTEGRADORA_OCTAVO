@@ -47,12 +47,23 @@ public class AccountService {
     private final EncryptionService encryptionService;
     private final ObjectMapper objectMapper;
     private final SmsService smsService;
+    private final Random random = new Random();
 
     private static final String ROLE_WORKER = "WORKER";
     private static final String ROLE_ADMIN = "ADMIN";
     private static final String ROLE_COMMON_USER = "COMMON_USER";
     private static final String ROLE_NOT_FOUND = "Rol no encontrado";
-
+    private static final String COMMON_USER_DIRECTORY = "common-users-profile-pics/";
+    private static final String ADMINS_DIRECTORY = "admins-profile-pics/";
+    private static final String WORKERS_DIRECTORY = "workers-profile-pics/";
+    private static final String ERROR_DELETING_PHOTO = "Error al eliminar la foto de perfil anterior: ";
+    private static final String SUCCESSFUL_UPDATE = "Foto de perfil actualizada con éxito.";
+    private static final String PHOTO_CANT_BE_EMPTY = "Foto de perfil actualizada con éxito.";
+    private static final String PASSWORD_CANT_BE_EMPTY = "La contraseña no puede estar vacía";
+    private static final String NOT_CONFIRMED = "Sin confirmar";
+    private static final String ADMIN_NOT_FOUND = "Administrador no encontrado";
+    private static final String WORKER_NOT_FOUND = "Trabajador no encontrado";
+    private static final String CONFIRMATION_CODE_IS = "Tu código de confirmación es: ";
 
     @Autowired
     public AccountService(RoleRepository roleRepository, CommonUserRepository commonUserRepository, WorkerRepository workerRepository, AdministratorRepository administratorRepository, PasswordEncoder passwordEncoder, EmailService emailService, FirebaseStorageService firebaseStorageService, EncryptionService encryptionService, ObjectMapper objectMapper, SmsService smsService){
@@ -88,18 +99,18 @@ public class AccountService {
         if (!userProfilePic.isEmpty()) {
             if (commonUser.getUserProfilePicUrl() != null && !commonUser.getUserProfilePicUrl().isEmpty()) {
                 try {
-                    firebaseStorageService.deleteFileFromFirebase(commonUser.getUserProfilePicUrl(), "common-users-profile-pics/");
+                    firebaseStorageService.deleteFileFromFirebase(commonUser.getUserProfilePicUrl(), COMMON_USER_DIRECTORY);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    return new Response<>(true, 500, "Error al eliminar la foto de perfil anterior: " + e.getMessage());
+                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
                 }
             }
-            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, "common-users-profile-pics/");
+            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, COMMON_USER_DIRECTORY);
             commonUser.setUserProfilePicUrl(imageUrl);
             commonUserRepository.save(commonUser);
-            return new Response<>(imageUrl, false, 200, "Foto de perfil actualizada con éxito.");
+            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
         } else {
-            return new Response<>(true, 400, "La foto de perfil no puede estar vacía.");
+            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
         }
     }
 
@@ -113,23 +124,23 @@ public class AccountService {
         commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
         commonUser.setUserName(commonUserDto.getUserName());
         if (commonUserDto.getUserPassword() == null || commonUserDto.getUserPassword().isEmpty()){
-            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+            throw new IllegalArgumentException(PASSWORD_CANT_BE_EMPTY);
         }
         commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
         commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
         if (userProfilePic != null && !userProfilePic.isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, "common-users-profile-pics/");
+            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, COMMON_USER_DIRECTORY);
             commonUser.setUserProfilePicUrl(imageUrl);
         }
         Role role = roleRepository.findByRoleName(ROLE_COMMON_USER)
                 .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
         commonUser.setRole(role);
-        commonUser.setAccountStatus("Sin confirmar");
-        String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+        commonUser.setAccountStatus(NOT_CONFIRMED);
+        String confirmationCode = String.format("%06d", random.nextInt(999999));
         commonUser.setConfirmationCode(confirmationCode);
         commonUser.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
         commonUserRepository.save(commonUser);
-        String emailContent = "Tu código de confirmación es: " + confirmationCode;
+        String emailContent = CONFIRMATION_CODE_IS + confirmationCode;
         emailService.sendConfirmationEmail(commonUser.getUserEmail(), "Confirmación de tu cuenta", emailContent);
         return new Response<>("Creado", false, 200, "La cuenta de usuario ha sido creada con éxito. Revisa tu correo para confirmarla.");
     }
@@ -144,7 +155,7 @@ public class AccountService {
         administrator.setAdminFirstLastName(adminDto.getAdminFirstLastName());
         administrator.setAdminName(adminDto.getAdminName());
         if (adminDto.getAdminPassword() == null || adminDto.getAdminPassword().isEmpty()) {
-            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+            throw new IllegalArgumentException(PASSWORD_CANT_BE_EMPTY);
         }
         administrator.setAdminPassword(passwordEncoder.encode(adminDto.getAdminPassword()));
         administrator.setAdminSecondLastName(adminDto.getAdminSecondLastName());
@@ -152,13 +163,13 @@ public class AccountService {
         administrator.setAdminSalary(adminSalary);
         administrator.setAdminSecurityNumber(adminDto.getAdminSecurityNumber());
 
-        administrator.setAccountStatus("Sin confirmar");
-        String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+        administrator.setAccountStatus(NOT_CONFIRMED);
+        String confirmationCode = String.format("%06d", random.nextInt(999999));
         administrator.setConfirmationCode(confirmationCode);
         administrator.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
 
         if (adminProfilePic != null && !adminProfilePic.isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, "admins-profile-pics/");
+            String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, ADMINS_DIRECTORY);
             administrator.setAdminProfilePicUrl(imageUrl);
         }
 
@@ -166,7 +177,7 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
         administrator.setRole(role);
         administratorRepository.save(administrator);
-        String smsContent = "Tu código de confirmación es: " + confirmationCode;
+        String smsContent = CONFIRMATION_CODE_IS + confirmationCode;
         smsService.sendSms(smsContent);
         return new Response<>("Creado", false, 200, "La cuenta de administrador ha sido creada con éxito");
     }
@@ -187,18 +198,18 @@ public class AccountService {
         worker.setWorkerSalary(workerSalary);
         worker.setWorkerRfc(workerDto.getWorkerRfc());
 
-        worker.setAccountStatus("Sin confirmar");
-        String confirmationCode = String.format("%06d", new Random().nextInt(999999));
+        worker.setAccountStatus(NOT_CONFIRMED);
+        String confirmationCode = String.format("%06d", random.nextInt(999999));
         worker.setConfirmationCode(confirmationCode);
         worker.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
 
         if (workerDto.getWorkerPassword() == null || workerDto.getWorkerPassword().isEmpty()){
-            throw new IllegalArgumentException("La contraseña no puede estar vacía");
+            throw new IllegalArgumentException(PASSWORD_CANT_BE_EMPTY);
         }
         worker.setWorkerPassword(passwordEncoder.encode(workerDto.getWorkerPassword()));
 
         if (workerProfilePic != null && !workerProfilePic.isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
+            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, WORKERS_DIRECTORY);
             worker.setWorkerProfilePicUrl(imageUrl);
         }
         Role role = roleRepository.findByRoleName(ROLE_WORKER)
@@ -206,7 +217,7 @@ public class AccountService {
         worker.setRole(role);
         worker = workerRepository.save(worker);
 
-        String emailContent = "Tu código de confirmación es: " + confirmationCode;
+        String emailContent = CONFIRMATION_CODE_IS + confirmationCode;
         emailService.sendConfirmationEmail(worker.getWorkerEmail(), "Confirmación de tu cuenta", emailContent);
 
         return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
@@ -218,7 +229,7 @@ public class AccountService {
         AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
         Long adminId = Long.parseLong(adminDto.getAdminId());
         Administrator administrator = administratorRepository.findById(adminId)
-                .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException(ADMIN_NOT_FOUND));
 
         administrator.setAdminCellphone(adminDto.getAdminCellphone());
         administrator.setAdminName(adminDto.getAdminName());
@@ -238,10 +249,10 @@ public class AccountService {
         AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
         Long adminId = Long.parseLong(adminDto.getAdminId());
         Administrator administrator = administratorRepository.findById(adminId)
-                .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException(ADMIN_NOT_FOUND));
 
         try {
-            firebaseStorageService.deleteFileFromFirebase(administrator.getAdminProfilePicUrl(), "admins-profile-pics/");
+            firebaseStorageService.deleteFileFromFirebase(administrator.getAdminProfilePicUrl(), ADMINS_DIRECTORY);
         } catch (IOException e) {
             e.printStackTrace();
             return new Response<>(
@@ -261,24 +272,24 @@ public class AccountService {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         AdministratorDto administratorDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
         Administrator administrator = administratorRepository.findById(Long.parseLong(administratorDto.getAdminId()))
-                .orElseThrow(() -> new UsernameNotFoundException("Administrador no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException(ADMIN_NOT_FOUND));
 
         if (!adminProfilePic.isEmpty()) {
             if (administrator.getAdminProfilePicUrl() != null && !administrator.getAdminProfilePicUrl().isEmpty()) {
                 try {
-                    firebaseStorageService.deleteFileFromFirebase(administrator.getAdminProfilePicUrl(), "admins-profile-pics/");
+                    firebaseStorageService.deleteFileFromFirebase(administrator.getAdminProfilePicUrl(), ADMINS_DIRECTORY);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    return new Response<>(true, 500, "Error al eliminar la foto de perfil anterior: " + e.getMessage());
+                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
                 }
             }
 
-            String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, "admins-profile-pics/");
+            String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, ADMINS_DIRECTORY);
             administrator.setAdminProfilePicUrl(imageUrl);
             administratorRepository.save(administrator);
-            return new Response<>(imageUrl, false, 200, "Foto de perfil actualizada con éxito.");
+            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
         } else {
-            return new Response<>(true, 400, "La foto de perfil no puede estar vacía.");
+            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
         }
     }
 
@@ -354,7 +365,7 @@ public class AccountService {
         WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
         Long workerId = Long.parseLong(workerDto.getWorkerId());
         Worker worker = workerRepository.findById(workerId)
-                .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
 
         worker.setWorkerName(workerDto.getWorkerName());
         worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
@@ -375,9 +386,9 @@ public class AccountService {
         WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
         Long workerId = Long.parseLong(workerDto.getWorkerId());
         Worker worker = workerRepository.findById(workerId)
-                .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
         try {
-            firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), "workers-profile-pics/");
+            firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), WORKERS_DIRECTORY);
         } catch (IOException e) {
             e.printStackTrace();
             return new Response<>(
@@ -395,22 +406,22 @@ public class AccountService {
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> updateWorkerProfilePic(Long workerId, MultipartFile workerProfilePic) throws IOException {
         Worker worker = workerRepository.findById(workerId)
-                .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
         if (!workerProfilePic.isEmpty()) {
             if (worker.getWorkerProfilePicUrl() != null && !worker.getWorkerProfilePicUrl().isEmpty()) {
                 try {
-                    firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), "workers-profile-pics/");
+                    firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), WORKERS_DIRECTORY);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    return new Response<>(true, 500, "Error al eliminar la foto de perfil anterior: " + e.getMessage());
+                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
                 }
             }
-            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, "workers-profile-pics/");
+            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, WORKERS_DIRECTORY);
             worker.setWorkerProfilePicUrl(imageUrl);
             workerRepository.save(worker);
-            return new Response<>(imageUrl, false, 200, "Foto de perfil actualizada con éxito.");
+            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
         } else {
-            return new Response<>(true, 400, "La foto de perfil no puede estar vacía.");
+            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
         }
     }
 
@@ -418,12 +429,12 @@ public class AccountService {
         switch (role) {
             case ROLE_ADMIN -> {
                 Administrator admin = administratorRepository.findByAdminEmail(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("Admin no encontrado"));
+                        .orElseThrow(() -> new UsernameNotFoundException(ADMIN_NOT_FOUND));
                 return new AdminGiveInfoDto(admin).encryptFields(encryptionService);
             }
             case ROLE_WORKER -> {
                 Worker worker = workerRepository.findByWorkerEmail(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("Trabajador no encontrado"));
+                        .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
                 return new WorkerGiveInfoDto(worker);
             }
             case ROLE_COMMON_USER -> {
