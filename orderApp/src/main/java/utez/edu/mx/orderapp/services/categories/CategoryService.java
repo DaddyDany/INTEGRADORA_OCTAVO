@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.firebaseintegrations.FirebaseStorageService;
 import utez.edu.mx.orderapp.models.categories.Category;
 import utez.edu.mx.orderapp.repositories.categories.CategoryRepository;
-import utez.edu.mx.orderapp.repositories.packages.PackageRepository;
 import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
@@ -61,6 +61,7 @@ public class CategoryService {
         dto.setServiceDescription(encryptionService.encrypt(category.getServiceDescription()));
         dto.setServiceQuote(encryptionService.encrypt(category.getServiceQuote()));
         dto.setServiceImgUrl(encryptionService.encrypt(category.getServiceImageUrl()));
+        dto.setServiceState(encryptionService.encrypt(String.valueOf(category.getServiceState())));
         return dto;
     }
 
@@ -73,12 +74,19 @@ public class CategoryService {
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> insertCategory(String encryptedData, MultipartFile serviceImage) throws Exception{
+        if (serviceImage != null && !serviceImage.isEmpty()) {
+            long maxFileSize = 20 * 1024 * 1024;
+            if (serviceImage.getSize() > maxFileSize) {
+                throw new MaxUploadSizeExceededException(maxFileSize);
+            }
+        }
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
         Category category = new Category();
         category.setServiceName(categoryDto.getServiceName());
         category.setServiceDescription(categoryDto.getServiceDescription());
         category.setServiceQuote(categoryDto.getServiceQuote());
+        category.setServiceState(true);
 
         if (serviceImage != null && !serviceImage.isEmpty()){
             String imageUrl = firebaseStorageService.uploadFile(serviceImage, "services-pics/");

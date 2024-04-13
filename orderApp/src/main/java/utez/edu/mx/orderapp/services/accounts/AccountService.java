@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdministratorDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
@@ -140,13 +141,21 @@ public class AccountService {
         commonUser.setConfirmationCode(confirmationCode);
         commonUser.setConfirmationCodeExpiry(LocalDateTime.now().plusDays(1));
         commonUserRepository.save(commonUser);
+
         String emailContent = CONFIRMATION_CODE_IS + confirmationCode;
         emailService.sendConfirmationEmail(commonUser.getUserEmail(), "Confirmación de tu cuenta", emailContent);
+
         return new Response<>("Creado", false, 200, "La cuenta de usuario ha sido creada con éxito. Revisa tu correo para confirmarla.");
     }
 
     @Transactional(rollbackFor = {Exception.class})
     public Response<String> createAdministratorAccount(String encryptedData, MultipartFile adminProfilePic) throws Exception {
+        if (adminProfilePic != null && !adminProfilePic.isEmpty()) {
+            long maxFileSize = 20 * 1024 * 1024;
+            if (adminProfilePic.getSize() > maxFileSize) {
+                throw new MaxUploadSizeExceededException(maxFileSize);
+            }
+        }
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         AdministratorDto adminDto = objectMapper.readValue(decryptedDataJson, AdministratorDto.class);
         Administrator administrator = new Administrator();
@@ -217,8 +226,8 @@ public class AccountService {
         worker.setRole(role);
         worker = workerRepository.save(worker);
 
-        String emailContent = CONFIRMATION_CODE_IS + confirmationCode;
-        emailService.sendConfirmationEmail(worker.getWorkerEmail(), "Confirmación de tu cuenta", emailContent);
+        String smsContent = CONFIRMATION_CODE_IS + confirmationCode;
+        smsService.sendSms(smsContent);
 
         return new Response<>(worker.getWorkerId(), false, 200, "La cuenta de trabajador ha sido creada con éxito");
     }

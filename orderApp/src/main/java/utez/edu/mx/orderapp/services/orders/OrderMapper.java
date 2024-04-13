@@ -3,7 +3,7 @@ package utez.edu.mx.orderapp.services.orders;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.repositories.orders.OrderComboRepository;
@@ -60,9 +60,9 @@ public class OrderMapper {
         return dto;
     }
 
-    public OrderInfoAdminDto toOrderInfoAdminDto(Order order) throws Exception {
+    public OrderInfoDto toOrderInfoDto(Order order) throws Exception {
         OrderResponseDto baseDto = toOrderResponseDto(order);
-        OrderInfoAdminDto adminDto = new OrderInfoAdminDto();
+        OrderInfoDto adminDto = new OrderInfoDto();
 
         List<String> encryptedPackageNames = orderPackageRepository.findByOrderOrderId(order.getOrderId())
                 .stream()

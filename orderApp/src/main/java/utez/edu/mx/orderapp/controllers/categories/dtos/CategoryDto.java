@@ -1,5 +1,6 @@
 package utez.edu.mx.orderapp.controllers.categories.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,8 @@ public class CategoryDto {
     private String serviceName;
     private String serviceDescription;
     private String serviceQuote;
+    private String serviceState;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private MultipartFile serviceImage;
     private String serviceImgUrl;
 

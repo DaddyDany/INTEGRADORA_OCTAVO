@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderAcceptanceDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderDto;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.accounts.Worker;
@@ -66,11 +66,11 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Response<List<OrderInfoAdminDto>> getAll() {
+    public Response<List<OrderInfoDto>> getAll() {
         List<Order> orders = this.orderRepository.findAll();
-        List<OrderInfoAdminDto> dtoList = orders.stream().map(order -> {
+        List<OrderInfoDto> dtoList = orders.stream().map(order -> {
             try {
-                return this.orderMapper.toOrderInfoAdminDto(order);
+                return this.orderMapper.toOrderInfoDto(order);
             } catch (Exception e) {
                 return null;
             }
@@ -338,12 +338,26 @@ public class OrderService {
         );
     }
 
-    public List<OrderResponseDto> findOrdersByUserId(Long userId) {
+    public List<OrderInfoDto> findOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findByCommonUserCommonUserId(userId);
         return orders.stream()
                 .map(order -> {
                     try {
-                        return this.orderMapper.toOrderResponseDto(order);
+                        return this.orderMapper.toOrderInfoDto(order);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    public List<OrderInfoDto> findOrdersByWorkerId(Long userId) {
+        List<Order> orders = orderRepository.findByWorkerId(userId);
+        return orders.stream()
+                .map(order -> {
+                    try {
+                        return this.orderMapper.toOrderInfoDto(order);
                     } catch (Exception e) {
                         return null;
                     }

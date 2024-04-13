@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @Setter
 @Getter
-public class OrderInfoAdminDto extends OrderResponseDto {
+public class OrderInfoDto extends OrderResponseDto {
     private String userName;
     private String userFirstLastName;
     private String userSecondLastName;

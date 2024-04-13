@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -34,19 +35,19 @@ public class Worker {
 
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo nombre solo puede contener letras y caracteres acentuados")
     @Column(name = "worker_name")
     private String workerName;
 
     @NotNull(message = "El apellido paterno no debe ser nulo")
     @NotBlank(message = "El apellido paterno no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido paterno solo puede contener letras y caracteres acentuados")
     @Column(name = "worker_first_last_name")
     private String workerFirstLastName;
 
     @NotNull(message = "El apellido materno no debe ser nulo")
     @NotBlank(message = "El apellido materno no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido materno solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "worker_second_last_name")
     private String workerSecondLastName;
 
@@ -69,11 +70,12 @@ public class Worker {
     @NotNull(message = "El NSS no debe ser nulo")
     @NotBlank(message = "El NSS no debe estar en blanco")
     @Size(min = 11, max = 11, message = "El número de seguridad social debe tener 11 dígitos")
-    @Column(name = "worker_security_number")
+    @Column(name = "worker_security_number", unique = true)
     private String workerSecurityNumber;
 
     @NotNull(message = "El salario no debe ser nulo")
     @Max(value = 20000, message = "El salario no debe ser superior a 50000, dudo que alguien aqui gane más que eso")
+    @Min(value = 0, message = "El salario del trabajador no debe ser negativo")
     @Column(name = "worker_salary")
     private Long workerSalary;
 
@@ -82,7 +84,7 @@ public class Worker {
 
     @NotNull(message = "El RFC no debe ser nulo")
     @NotBlank(message = "El RFC no debe estar en blanco")
-    @Column(name = "worker_rfc")
+    @Column(name = "worker_rfc", unique = true)
     private String workerRfc;
     @Column(name = "account_status")
     private String accountStatus = "Sin confirmar";
