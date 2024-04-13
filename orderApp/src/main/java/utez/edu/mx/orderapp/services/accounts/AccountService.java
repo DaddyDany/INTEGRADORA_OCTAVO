@@ -396,6 +396,13 @@ public class AccountService {
         Long workerId = Long.parseLong(workerDto.getWorkerId());
         Worker worker = workerRepository.findById(workerId)
                 .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
+        System.out.println(worker.getWorkerOrders());
+        System.out.println(!worker.getWorkerOrders().isEmpty());
+        if (!worker.getWorkerOrders().isEmpty()) {
+            System.out.println("Pues si entro");
+            return new Response<>(null, true, 400, "No se puede eliminar al trabajador porque ha sido asociado con ordenes.");
+        }
+
         try {
             firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), WORKERS_DIRECTORY);
         } catch (IOException e) {

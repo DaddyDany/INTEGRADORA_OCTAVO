@@ -75,7 +75,7 @@ public class Administrator {
 
     @NotNull(message = "El salario no debe ser nulo")
     @Max(value = 50000, message = "El salario no debe ser superior a 50000, dudo que alguien aqui gane más que eso")
-    @Min(value = 0, message = "El salario del administrador no debe ser negativo")
+    @Min(value = 1, message = "El salario del administrador no debe ser negativo")
     @Column(name = "admin_salary")
     private Long adminSalary;
 

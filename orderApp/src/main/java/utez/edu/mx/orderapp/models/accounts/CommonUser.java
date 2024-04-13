@@ -10,6 +10,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.orders.Order;
@@ -26,16 +31,38 @@ public class CommonUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "common_user_id")
     private Long commonUserId;
+
+    @NotNull(message = "El nombre no debe ser nulo")
+    @NotBlank(message = "El nombre no debe ir vacío")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo nombre solo puede contener letras y caracteres acentuados")
     @Column(name = "user_name")
     private String userName;
+
+    @NotNull(message = "El apellido paterno no debe ser nulo")
+    @NotBlank(message = "El apellido paterno no debe ir vacío")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido paterno solo puede contener letras y caracteres acentuados")
     @Column(name = "user_first_last_name")
     private String userFirstLastName;
+
+    @NotNull(message = "El apellido materno no debe ser nulo")
+    @NotBlank(message = "El apellido materno no debe ir vacío")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido materno solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "user_second_last_name")
     private String userSecondLastName;
+
+    @NotNull(message = "El correo no debe ser nulo")
+    @NotBlank(message = "El correo no debe ir vacío")
+    @Email(message = "Debe ser una dirección de correo electrónico válida")
     @Column(name = "user_email")
     private String userEmail;
+
     @Column(name = "user_password")
     private String userPassword;
+
+    @NotNull(message = "El telefono no debe ser nulo")
+    @NotBlank(message = "El telefono no debe estar en blanco")
+    @Size(min = 10, max = 10, message = "El teléfono debe tener exactamente 10 dígitos")
+    @Pattern(regexp = "^\\d{10}$", message = "El teléfono solo debe contener dígitos")
     @Column(name = "user_cellphone")
     private String userCellphone;
     @Column(name = "user_profile_pic_url")

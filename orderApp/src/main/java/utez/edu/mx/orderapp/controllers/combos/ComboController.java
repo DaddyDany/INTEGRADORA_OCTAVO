@@ -57,7 +57,7 @@ public class ComboController {
     @PostMapping
     public ResponseEntity<Response<String>> insertCombo(@RequestPart("data") String encryptedData, @RequestParam(value = "comboImg", required = false) MultipartFile comboImg) throws Exception {
         Response<String> response = this.comboService.insertCombo(encryptedData, comboImg);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/update-combo")
@@ -69,7 +69,7 @@ public class ComboController {
     @DeleteMapping("/delete-combo")
     public ResponseEntity<Response<String>> delete(@RequestBody String encryptedData) throws Exception{
         Response<String> response = comboService.deleteCombo(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @GetMapping("/{comboId}/packages")

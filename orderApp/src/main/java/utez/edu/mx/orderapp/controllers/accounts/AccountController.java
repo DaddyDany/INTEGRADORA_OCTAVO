@@ -71,19 +71,19 @@ public class AccountController {
     @PostMapping("/create-admin")
     public ResponseEntity<Response<String>> createAdminAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "adminProfilePic", required = false) MultipartFile adminProfilePic) throws Exception{
         Response<String> response = accountService.createAdministratorAccount(encryptedData, adminProfilePic);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @DeleteMapping("/delete-admin")
     public ResponseEntity<Response<String>> deleteAdminAccount(@RequestBody String encryptedData) throws Exception{
         Response<String> response = accountService.deleteAdmin(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @DeleteMapping("/delete-worker")
     public ResponseEntity<Response<String>> deleteWorkerAccount(@RequestBody String encryptedData) throws Exception{
         Response<String> response = accountService.deleteWorker(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/update-admin")
@@ -146,7 +146,7 @@ public class AccountController {
             @RequestPart("data") String encryptedData,
             @RequestParam(value = "workerProfilePic", required = false) MultipartFile workerProfilePic) throws Exception {
         Response<Long> response = accountService.createWorkerAccount(encryptedData, workerProfilePic);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/update-worker")

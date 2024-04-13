@@ -51,19 +51,19 @@ public class Package {
 
     @NotNull(message = "El precio no debe ser nulo")
     @Max(value = 15000, message = "El precio no debe ser superior a 15000, dudo que alguien pague eso")
-    @Min(value = 0, message = "El precio no debe ser negativo")
+    @Min(value = 1, message = "El precio no debe ser negativo")
     @Column(name = "package_price")
     private Long packagePrice;
     @Column(name = "package_state")
     private Boolean packageState;
 
     @NotNull(message = "Las horas no deben ser nulas")
-    @Min(value = 0, message = "Las horas no deben ser negativas")
+    @Min(value = 1, message = "Las horas no deben ser negativas")
     @Column(name = "designated_hours")
     private Integer designatedHours;
 
     @NotNull(message = "El número de trabajadores no debe ser nulo")
-    @Min(value = 0, message = "El número de trabajadores no debe ser negativo")
+    @Min(value = 1, message = "El número de trabajadores no debe ser negativo")
     @Column(name = "workers_number")
     private Integer workersNumber;
     @ManyToOne
