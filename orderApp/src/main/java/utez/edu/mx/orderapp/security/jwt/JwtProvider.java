@@ -17,8 +17,8 @@ public class JwtProvider {
     private String secret;
     @Value("${jwt.expiration}")
     private long expiration;
-    private final String TOKEN_HEADER = "Authorization";
-    private final String TOKEN_TYPE = "Bearer ";
+    private static final String TOKEN_HEADER = "Authorization";
+    private static final String TOKEN_TYPE = "Bearer ";
 
     public String generateToken(Authentication auth) {
         UserDetails user = (UserDetails) auth.getPrincipal();
@@ -67,7 +67,6 @@ public class JwtProvider {
         String bearerToken = req.getHeader(TOKEN_HEADER);
         if (bearerToken != null && bearerToken.startsWith(TOKEN_TYPE))
             return bearerToken.replace(TOKEN_TYPE, "");
-        // bearerToken.substring(TOKEN_TYPE.length());
         return null;
     }
 

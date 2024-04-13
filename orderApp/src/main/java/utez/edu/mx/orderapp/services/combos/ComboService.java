@@ -65,7 +65,6 @@ public class ComboService {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         ComboDto comboDto = objectMapper.readValue(decryptedDataJson, ComboDto.class);
         Combo combo = new Combo();
-        System.out.println(combo);
         combo.setComboName(comboDto.getComboName());
         combo.setComboDescription(comboDto.getComboDescription());
         combo.setComboPrice(comboDto.getComboPrice());
@@ -113,6 +112,11 @@ public class ComboService {
         Long comboId = Long.parseLong(comboDto.getComboId());
         Combo combo = comboRepository.findById(comboId)
                 .orElseThrow(() -> new EntityNotFoundException("Paquete no encontrado"));
+
+        if (!combo.getOrderCombos().isEmpty()) {
+            return new Response<>(null, true, 400, "No se puede eliminar el combo porque ha sido asociado con ordenes.");
+        }
+
         try {
             firebaseStorageService.deleteFileFromFirebase(combo.getComboImgUrl(), "combos-pics/");
         } catch (IOException e) {

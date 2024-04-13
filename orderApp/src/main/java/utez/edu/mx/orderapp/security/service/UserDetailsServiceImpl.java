@@ -18,6 +18,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final CommonUserRepository commonUserRepository;
     private final AdministratorRepository administratorRepository;
     private final WorkerRepository workerRepository;
+
+    private static final String CONFIRMED = "Confirmada";
+
     @Autowired
     public UserDetailsServiceImpl(CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository, WorkerRepository workerRepository){
         this.administratorRepository = administratorRepository;
@@ -29,21 +32,21 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         CommonUser commonUser = commonUserRepository.findByUserEmail(email).orElse(null);
         if (commonUser != null) {
-            if (!"Confirmada".equals(commonUser.getAccountStatus())) {
+            if (!CONFIRMED.equals(commonUser.getAccountStatus())) {
                 throw new UsernameNotFoundException("La cuenta no está confirmada para el email: " + email);
             }
             return UserDetailsImpl.fromCommonUser(commonUser);
         }
         Worker worker = workerRepository.findByWorkerEmail(email).orElse(null);
         if (worker != null) {
-            if (!"Confirmada".equals(worker.getAccountStatus())) {
+            if (!CONFIRMED.equals(worker.getAccountStatus())) {
                 throw new UsernameNotFoundException("La cuenta no está confirmada para el email: " + email);
             }
             return UserDetailsImpl.fromWorker(worker);
         }
         Administrator administrator = administratorRepository.findByAdminEmail(email).orElse(null);
         if (administrator != null) {
-            if(!"Confirmada".equals(administrator.getAccountStatus())){
+            if(!CONFIRMED.equals(administrator.getAccountStatus())){
                 throw new UsernameNotFoundException("La cuenta no esta confirmada para: " + email);
             }
             return UserDetailsImpl.fromAdministrator(administrator);

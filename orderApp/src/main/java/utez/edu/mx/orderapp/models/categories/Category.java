@@ -29,23 +29,20 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "service_id")
     private Long serviceId;
-
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo nombre solo puede contener letras, puntos, comas, y caracteres acentuados")
     @Column(name = "service_name")
     private String serviceName;
-
     @NotNull(message = "La descripción no debe ser nula")
     @NotBlank(message = "La descripción no debe ir vacía")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s()!?]*$", message = "El campo descripción solo puede contener letras, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
     @Size(min = 50, max = 3000, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 3000 caracteres")
     @Column(name = "service_description")
     private String serviceDescription;
-
     @NotNull(message = "La frase no debe ser nula")
     @NotBlank(message = "La frase no debe ir vacía")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s()!?]*$", message = "El campo de la frase solo puede contener letras, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
     @Size(min = 10, max = 60, message = "La frase del servicio debe tener como mínimo 10 y como máximo 60 caracteres")
     @Column(name = "service_quote")
     private String serviceQuote;
@@ -56,11 +53,4 @@ public class Category {
     @JsonIgnore
     @OneToMany(mappedBy = "category")
     private List<Package> packages;
-
-    public Category(String serviceName, String serviceDescription, String serviceQuote, String serviceImageUrl) {
-        this.serviceName = serviceName;
-        this.serviceDescription = serviceDescription;
-        this.serviceQuote = serviceQuote;
-        this.serviceImageUrl = serviceImageUrl;
-    }
 }

@@ -1,21 +1,15 @@
 package utez.edu.mx.orderapp.controllers.orders.dtos;
 
-import com.google.api.client.util.DateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.orders.Order;
-import utez.edu.mx.orderapp.models.orders.OrderCombo;
-import utez.edu.mx.orderapp.models.orders.OrderPackage;
 
-import java.sql.Time;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
@@ -30,6 +24,7 @@ public class OrderDto {
     private Long commonUserId;
     private String sessionId;
     private List<Long> packagesIds = new ArrayList<>();
+
     private List<Long> combosIds = new ArrayList<>();
 
     public Order toOrder(CommonUser commonUser) {

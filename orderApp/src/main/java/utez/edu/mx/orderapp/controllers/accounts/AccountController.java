@@ -40,6 +40,9 @@ public class AccountController {
     private final CommonUserRepository commonUserRepository;
     private final WorkerRepository workerRepository;
     private final AdministratorRepository administratorRepository;
+    private static final String INVALID_TOKEN = "Token no valido o expirado";
+    private static final String CONFIRMED = "Confirmada";
+
     @Autowired
     public AccountController(AccountService accountService, CommonUserRepository commonUserRepository, AdministratorRepository administratorRepository, WorkerRepository workerRepository){
         this.accountService = accountService;
@@ -68,19 +71,19 @@ public class AccountController {
     @PostMapping("/create-admin")
     public ResponseEntity<Response<String>> createAdminAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "adminProfilePic", required = false) MultipartFile adminProfilePic) throws Exception{
         Response<String> response = accountService.createAdministratorAccount(encryptedData, adminProfilePic);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @DeleteMapping("/delete-admin")
     public ResponseEntity<Response<String>> deleteAdminAccount(@RequestBody String encryptedData) throws Exception{
         Response<String> response = accountService.deleteAdmin(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @DeleteMapping("/delete-worker")
     public ResponseEntity<Response<String>> deleteWorkerAccount(@RequestBody String encryptedData) throws Exception{
         Response<String> response = accountService.deleteWorker(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/update-admin")
@@ -99,42 +102,42 @@ public class AccountController {
     @PostMapping("/confirm-account")
     public ResponseEntity<String> confirmAccount(@RequestParam("token") String token) {
         CommonUser user = commonUserRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+                .orElseThrow(() -> new RuntimeException(INVALID_TOKEN));
 
         if (LocalDateTime.now().isBefore(user.getConfirmationCodeExpiry())) {
-            user.setAccountStatus("Confirmada");
+            user.setAccountStatus(CONFIRMED);
             commonUserRepository.save(user);
             return ResponseEntity.ok("Cuenta confirmada con exito.");
         } else {
-            return ResponseEntity.badRequest().body("Token no valido o expirado");
+            return ResponseEntity.badRequest().body(INVALID_TOKEN);
         }
     }
 
     @PostMapping("/confirm-worker-account")
     public ResponseEntity<String> confirmWorkerAccount(@RequestParam("token") String token) {
         Worker worker = workerRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+                .orElseThrow(() -> new RuntimeException(INVALID_TOKEN));
 
         if (LocalDateTime.now().isBefore(worker.getConfirmationCodeExpiry())) {
-            worker.setAccountStatus("Confirmada");
+            worker.setAccountStatus(CONFIRMED);
             workerRepository.save(worker);
             return ResponseEntity.ok("Cuenta de trabajador confirmada con exito.");
         } else {
-            return ResponseEntity.badRequest().body("Token no valido o expirado");
+            return ResponseEntity.badRequest().body(INVALID_TOKEN);
         }
     }
 
     @PostMapping("/confirm-admin-account")
     public ResponseEntity<String> confirmAdminAccount(@RequestParam("token") String token) {
         Administrator admin = administratorRepository.findByConfirmationCode(token)
-                .orElseThrow(() -> new RuntimeException("Token no valido o expirado"));
+                .orElseThrow(() -> new RuntimeException(INVALID_TOKEN));
 
         if (LocalDateTime.now().isBefore(admin.getConfirmationCodeExpiry())) {
-            admin.setAccountStatus("Confirmada");
+            admin.setAccountStatus(CONFIRMED);
             administratorRepository.save(admin);
             return ResponseEntity.ok("Cuenta de administrador confirmada con éxito.");
         } else {
-            return ResponseEntity.badRequest().body("Token no valido o expirado");
+            return ResponseEntity.badRequest().body(INVALID_TOKEN);
         }
     }
 
@@ -143,7 +146,7 @@ public class AccountController {
             @RequestPart("data") String encryptedData,
             @RequestParam(value = "workerProfilePic", required = false) MultipartFile workerProfilePic) throws Exception {
         Response<Long> response = accountService.createWorkerAccount(encryptedData, workerProfilePic);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
     @PutMapping("/update-worker")

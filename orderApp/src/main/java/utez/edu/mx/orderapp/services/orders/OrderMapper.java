@@ -3,9 +3,10 @@ package utez.edu.mx.orderapp.services.orders;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
 import utez.edu.mx.orderapp.models.orders.Order;
+import utez.edu.mx.orderapp.repositories.orders.OrderComboRepository;
 import utez.edu.mx.orderapp.repositories.orders.OrderPackageRepository;
 import utez.edu.mx.orderapp.repositories.orders.WorkerOrderRepository;
 import utez.edu.mx.orderapp.utils.EncryptionService;
@@ -19,14 +20,14 @@ public class OrderMapper {
     private final EncryptionService encryptionService;
     private final OrderPackageRepository orderPackageRepository;
     private final WorkerOrderRepository workerOrderRepository;
-
+    private final OrderComboRepository orderComboRepository;
     @Autowired
-    public OrderMapper(EncryptionService encryptionService, OrderPackageRepository orderPackageRepository, WorkerOrderRepository workerOrderRepository) {
+    public OrderMapper(EncryptionService encryptionService, OrderPackageRepository orderPackageRepository, WorkerOrderRepository workerOrderRepository, OrderComboRepository orderComboRepository) {
         this.encryptionService = encryptionService;
         this.orderPackageRepository = orderPackageRepository;
         this.workerOrderRepository = workerOrderRepository;
+        this.orderComboRepository = orderComboRepository;
     }
-
     public OrderResponseDto toOrderResponseDto(Order order) throws Exception {
         OrderResponseDto dto = new OrderResponseDto();
 
@@ -59,9 +60,9 @@ public class OrderMapper {
         return dto;
     }
 
-    public OrderInfoAdminDto toOrderInfoAdminDto(Order order) throws Exception {
+    public OrderInfoDto toOrderInfoDto(Order order) throws Exception {
         OrderResponseDto baseDto = toOrderResponseDto(order);
-        OrderInfoAdminDto adminDto = new OrderInfoAdminDto();
+        OrderInfoDto adminDto = new OrderInfoDto();
 
         List<String> encryptedPackageNames = orderPackageRepository.findByOrderOrderId(order.getOrderId())
                 .stream()
@@ -74,7 +75,29 @@ public class OrderMapper {
                 })
                 .toList();
 
-        adminDto.setPackageNames(encryptedPackageNames);
+        if (!encryptedPackageNames.isEmpty()) {
+            adminDto.setPackageNames(encryptedPackageNames);
+        } else {
+            adminDto.setPackageNames(null);
+        }
+
+        List<String> encriptedComboNames = orderComboRepository.findByOrderOrderId(order.getOrderId())
+                .stream()
+                .map(orderCombo -> {
+                    try {
+                        return encryptionService.encrypt(orderCombo.getCombo().getComboName());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+        if (!encriptedComboNames.isEmpty()) {
+            adminDto.setComboNames(encriptedComboNames);
+        } else {
+            adminDto.setComboNames(null);
+        }
+
 
         List<String> encryptedWorkerNames = workerOrderRepository.findByOrderOrderId(order.getOrderId())
                 .stream()
@@ -89,7 +112,11 @@ public class OrderMapper {
                 .filter(Objects::nonNull)
                 .toList();
 
-        adminDto.setWorkerNames(encryptedWorkerNames);
+        if (!encryptedWorkerNames.isEmpty()) {
+            adminDto.setWorkerNames(encryptedWorkerNames);
+        } else {
+            adminDto.setWorkerNames(null);
+        }
 
         BeanUtils.copyProperties(baseDto, adminDto);
         adminDto.setUserName(encryptionService.encrypt(order.getCommonUser().getUserName()));

@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -31,19 +32,19 @@ public class Administrator {
 
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo nombre solo puede contener letras y caracteres acentuados")
     @Column(name = "admin_name")
     private String adminName;
 
     @NotNull(message = "El apellido paterno no debe ser nulo")
     @NotBlank(message = "El apellido paterno no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido paterno solo puede contener letras y caracteres acentuados")
     @Column(name = "admin_first_last_name")
     private String adminFirstLastName;
 
     @NotNull(message = "El apellido materno no debe ser nulo")
     @NotBlank(message = "El apellido materno no debe ir vacío")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido materno solo puede contener letras y caracteres acentuados")
     @Column(name = "admin_second_last_name")
     private String adminSecondLastName;
 
@@ -74,6 +75,7 @@ public class Administrator {
 
     @NotNull(message = "El salario no debe ser nulo")
     @Max(value = 50000, message = "El salario no debe ser superior a 50000, dudo que alguien aqui gane más que eso")
+    @Min(value = 1, message = "El salario del administrador no debe ser negativo")
     @Column(name = "admin_salary")
     private Long adminSalary;
 

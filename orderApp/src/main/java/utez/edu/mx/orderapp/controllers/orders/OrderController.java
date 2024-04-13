@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderDto;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoAdminDto;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderResponseDto;
+import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoDto;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
+import utez.edu.mx.orderapp.models.accounts.Worker;
 import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
+import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.services.orders.OrderService;
 import utez.edu.mx.orderapp.utils.Response;
 
@@ -33,16 +34,18 @@ import java.util.Optional;
 public class OrderController {
     private final OrderService orderService;
     private final CommonUserRepository commonUserRepository;
+    private final WorkerRepository workerRepository;
 
     @Autowired
-    public OrderController(OrderService orderService, CommonUserRepository commonUserRepository){
+    public OrderController(OrderService orderService, CommonUserRepository commonUserRepository, WorkerRepository workerRepository){
         this.orderService = orderService;
         this.commonUserRepository = commonUserRepository;
+        this.workerRepository = workerRepository;
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderInfoAdminDto>> getAll() {
-        Response<List<OrderInfoAdminDto>> response = orderService.getAll();
+    public ResponseEntity<List<OrderInfoDto>> getAll() {
+        Response<List<OrderInfoDto>> response = orderService.getAll();
         if (response.isSuccess()){
             return new ResponseEntity<>(response.getData(), HttpStatus.OK);
         }else{
@@ -66,7 +69,6 @@ public class OrderController {
         CommonUser commonUser = commonUserRepository.findByUserEmail(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Long userId = commonUser.getCommonUserId();
-        //orderDto.setCommonUserId(userId);
         Response<String> response = orderService.createOrder(encryptedData, userId);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
@@ -114,11 +116,23 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public ResponseEntity<List<OrderResponseDto>> getMyOrders(Authentication authentication) {
+    public ResponseEntity<List<OrderInfoDto>> getMyOrders(Authentication authentication) {
         String username = authentication.getName();
-        Optional<CommonUser> user = commonUserRepository.findByUserName(username);
+        Optional<CommonUser> user = commonUserRepository.findByUserEmail(username);
         if (user.isPresent()) {
-            List<OrderResponseDto> orders = orderService.findOrdersByUserId(user.get().getCommonUserId());
+            List<OrderInfoDto> orders = orderService.findOrdersByUserId(user.get().getCommonUserId());
+            return ResponseEntity.ok(orders);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/worker-assigned-orders")
+    public ResponseEntity<List<OrderInfoDto>> getWorkerOrders(Authentication authentication) {
+        String username = authentication.getName();
+        Optional<Worker> user = workerRepository.findByWorkerEmail(username);
+        if (user.isPresent()) {
+            List<OrderInfoDto> orders = orderService.findOrdersByWorkerId(user.get().getWorkerId());
             return ResponseEntity.ok(orders);
         } else {
             return ResponseEntity.notFound().build();

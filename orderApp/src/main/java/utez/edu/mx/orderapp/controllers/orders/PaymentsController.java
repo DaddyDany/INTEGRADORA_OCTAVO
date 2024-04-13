@@ -22,10 +22,10 @@ public class PaymentsController {
         this.stripeService = stripeService;
     }
     @PostMapping("/create-checkout-session")
-    public ResponseEntity<?> createCheckoutSession(@RequestPart("data") String encData) {
+    public ResponseEntity<String> createCheckoutSession(@RequestPart("data") String encData) {
         try {
             String url = stripeService.createCheckoutSessionFromEncodedData(encData);
-            return ResponseEntity.ok().body(Map.of("url", url));
+            return ResponseEntity.ok().body(Map.of("url", url).toString());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al crear la sesión de checkout: " + e.getMessage());
         }

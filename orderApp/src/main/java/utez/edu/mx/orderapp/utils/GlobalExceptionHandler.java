@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,9 +46,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new Response<>(true, 419, errorMessage), HttpStatus.valueOf(CustomHttpStatusTwo.HTTP_STATUS_419.value()));
     }
 
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
+        String errorMessage = "El tamaño del archivo es superior al permitido";
+        return new ResponseEntity<>(new Response<>(true, 413, errorMessage), HttpStatus.valueOf(413));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        if (ex.getMessage().contains("Invalid or expired confirmation token")) {
+        if (ex.getMessage().contains("Token invalido o expirado")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ocurrió un error interno.");
@@ -78,6 +87,7 @@ public class GlobalExceptionHandler {
         }
     }
 
+
     public enum CustomHttpStatus {
         HTTP_STATUS_420(420, "Correo duplicado");
 
@@ -100,7 +110,7 @@ public class GlobalExceptionHandler {
     }
 
     public enum CustomHttpStatusTwo {
-        HTTP_STATUS_419(419, "Error de transaccion");
+        HTTP_STATUS_419(419, "Error de transacción");
 
 
         private final int value;

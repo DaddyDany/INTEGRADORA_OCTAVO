@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -50,16 +51,19 @@ public class Package {
 
     @NotNull(message = "El precio no debe ser nulo")
     @Max(value = 15000, message = "El precio no debe ser superior a 15000, dudo que alguien pague eso")
+    @Min(value = 1, message = "El precio no debe ser negativo")
     @Column(name = "package_price")
     private Long packagePrice;
     @Column(name = "package_state")
     private Boolean packageState;
 
-    @NotNull(message = "El las horas no deben ser nulas")
+    @NotNull(message = "Las horas no deben ser nulas")
+    @Min(value = 1, message = "Las horas no deben ser negativas")
     @Column(name = "designated_hours")
     private Integer designatedHours;
 
     @NotNull(message = "El número de trabajadores no debe ser nulo")
+    @Min(value = 1, message = "El número de trabajadores no debe ser negativo")
     @Column(name = "workers_number")
     private Integer workersNumber;
     @ManyToOne
