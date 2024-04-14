@@ -59,16 +59,16 @@ public class PackageService {
                     .map(imagePackage -> new ImageInfoDto(imagePackage.getImageUrl()))
                     .toList();
             PackageInfoDto packageInfoDto = new PackageInfoDto(
-                    String.valueOf(aPackage.getPackageId()), // Long a String
+                    String.valueOf(aPackage.getPackageId()),
                     aPackage.getPackageName(),
                     aPackage.getPackageDescription(),
-                    String.valueOf(aPackage.getPackagePrice()), // Long a String
-                    String.valueOf(aPackage.getPackageState()), // Boolean a String
-                    String.valueOf(aPackage.getDesignatedHours()), // Integer a String
-                    String.valueOf(aPackage.getWorkersNumber()), // Integer a String
-                    aPackage.getCategory().getServiceName(), // Suponiendo que getServiceName() devuelve el nombre de la categoría como String
+                    String.valueOf(aPackage.getPackagePrice()),
+                    String.valueOf(aPackage.getPackageState()),
+                    String.valueOf(aPackage.getDesignatedHours()),
+                    String.valueOf(aPackage.getWorkersNumber()),
+                    aPackage.getCategory().getServiceName(),
                     String.valueOf(aPackage.getCategory().getServiceId()),
-                    imageInfoDtos // Asumiendo que este ya es una List<ImageInfoDto> como esperado
+                    imageInfoDtos
             );
             return new Response<>(packageInfoDto, false, HttpStatus.OK.value(), "Package fetched successfully");
         }).orElseGet(() -> new Response<>(null, true, HttpStatus.NOT_FOUND.value(), "Package not found"));
