@@ -1,5 +1,6 @@
 package utez.edu.mx.orderapp.controllers.reviews.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ReviewDto {
-    private Long orderId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String orderId;
     private String reviewDescription;
-    private Integer score;
+    private String score;
+    private String packCombName;
 }
