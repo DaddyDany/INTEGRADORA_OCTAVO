@@ -13,6 +13,7 @@ import lombok.Setter;
 public class ReviewDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String orderId;
+    private String reviewId;
     private String reviewDescription;
     private String score;
     private String packCombName;

@@ -88,7 +88,7 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private Set<WorkerOrder> workerOrders;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "order")
     private Review review;
 
     public Order() {

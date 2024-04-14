@@ -1,5 +1,6 @@
 package utez.edu.mx.orderapp.services.reviews;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import utez.edu.mx.orderapp.repositories.reviews.ReviewRepository;
 import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,6 +34,7 @@ public class ReviewService {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional(rollbackFor = {SQLException.class})
     public Response<String> saveReview(String encryptedData, Long userId) throws Exception{
         String correctedData = encryptedData.replace("\"", "");
         String decryptedDataJson = encryptionService.decrypt(correctedData);
@@ -60,6 +63,36 @@ public class ReviewService {
         return new Response<>("Creada", false, 200, "Review creada con éxito");
     }
 
+    public List<ReviewDto> findReviewsByUserId(Long userId){
+        List<Review> reviews = reviewRepository.findByUserId(userId);
+        return reviews.stream()
+                .map(review -> {
+                    try {
+                        return convertToReviewDto(review);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> deleteReview(String encryptedData, Long userId) throws Exception {
+        String correctedData = encryptedData.replace("\"", "");
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+        ReviewDto reviewDto = objectMapper.readValue(decryptedDataJson, ReviewDto.class);
+        Long reviewId = Long.parseLong(reviewDto.getReviewId());
+        Optional<Review> review = reviewRepository.findById(reviewId);
+
+        if (review.isPresent() && review.get().getUserId().equals(userId)) {
+            reviewRepository.deleteById(review.get().getReviewId());
+            return new Response<>("Eliminada", false, 200, "Reseña eliminada con éxito");
+        } else {
+            return new Response<>("No autorizado", true, 403, "No tienes permiso para eliminar esta reseña");
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<ReviewDto> getAll() {
         return reviewRepository.findAll().stream()
@@ -76,6 +109,7 @@ public class ReviewService {
 
     private ReviewDto convertToReviewDto(Review review) throws Exception {
         ReviewDto dto = new ReviewDto();
+        dto.setReviewId(encryptionService.encrypt(String.valueOf(review.getReviewId())));
         dto.setReviewDescription(encryptionService.encrypt(review.getReviewDescription()));
         dto.setScore(encryptionService.encrypt(String.valueOf(review.getScore())));
         dto.setPackCombName(encryptionService.encrypt(review.getPackCombName()));
