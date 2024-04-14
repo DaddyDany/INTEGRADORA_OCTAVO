@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.AdminGiveInfoDto;
-import utez.edu.mx.orderapp.controllers.accounts.dtos.CommonUserDto;
 import utez.edu.mx.orderapp.controllers.accounts.dtos.WorkerGiveInfoDto;
 import utez.edu.mx.orderapp.models.accounts.Administrator;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
@@ -56,18 +55,6 @@ public class AccountController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
-    @PutMapping("/update/info/{userId}")
-    public ResponseEntity<Response<Long>> updateUserInfo(@PathVariable Long userId, @RequestBody CommonUserDto commonUserDto) {
-        Response<Long> response = accountService.updateCommonUserInfo(userId, commonUserDto);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-    }
-
-    @PostMapping("/update/profile-pic/{userId}")
-    public ResponseEntity<Response<String>> updateUserProfilePic(@PathVariable Long userId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
-        Response<String> response = accountService.updateCommonUserProfilePic(userId, profilePic);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-    }
-
     @PostMapping("/create-admin")
     public ResponseEntity<Response<String>> createAdminAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "adminProfilePic", required = false) MultipartFile adminProfilePic) throws Exception{
         Response<String> response = accountService.createAdministratorAccount(encryptedData, adminProfilePic);
@@ -92,9 +79,34 @@ public class AccountController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
+    @PutMapping("/update-user")
+    public ResponseEntity<Response<String>> updateUserInfo(@RequestPart("data") String encryptedData) throws Exception{
+        Response<String> response = accountService.updateCommonUserInfo(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PutMapping("/update-worker")
+    public ResponseEntity<Response<String>> updateWorker(@RequestPart("data") String encryptedData) throws Exception{
+        Response<String> response = accountService.updateWorkerInfo(encryptedData);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+
     @PostMapping("/update-admin/profile-pic")
     public ResponseEntity<Response<String>> updateAdminProfilePic(@RequestPart("data") String encryptedData, @RequestParam(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
         Response<String> response = accountService.updateAdminProfilePic(encryptedData , profilePic);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PostMapping("/update-user/profile-pic")
+    public ResponseEntity<Response<String>> updateUserProfilePic(@RequestPart("data") String encryptedData, @RequestParam(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
+        Response<String> response = accountService.updateCommonUserProfilePic(encryptedData, profilePic);
+        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+    }
+
+    @PostMapping("/update-worker/profile-pic")
+    public ResponseEntity<Response<String>> updateWorkerProfilePic(@RequestPart("data") String encryptedData, @RequestParam(value = "profilePic", required = false) MultipartFile profilePic) throws Exception {
+        Response<String> response = accountService.updateWorkerProfilePic(encryptedData , profilePic);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
@@ -146,19 +158,6 @@ public class AccountController {
             @RequestPart("data") String encryptedData,
             @RequestParam(value = "workerProfilePic", required = false) MultipartFile workerProfilePic) throws Exception {
         Response<Long> response = accountService.createWorkerAccount(encryptedData, workerProfilePic);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-    }
-
-    @PutMapping("/update-worker")
-    public ResponseEntity<Response<String>> updateWorker(@RequestPart("data") String encryptedData) throws Exception{
-        Response<String> response = accountService.updateWorkerInfo(encryptedData);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-    }
-
-
-    @PostMapping("/update-worker/profile-pic/{workerId}")
-    public ResponseEntity<Response<String>> updateWorkerProfilePic(@PathVariable Long workerId, @RequestParam("profilePic") MultipartFile profilePic) throws IOException {
-        Response<String> response = accountService.updateWorkerProfilePic(workerId , profilePic);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
