@@ -63,6 +63,7 @@ public class AccountService {
     private static final String PASSWORD_CANT_BE_EMPTY = "La contraseña no puede estar vacía";
     private static final String NOT_CONFIRMED = "Sin confirmar";
     private static final String ADMIN_NOT_FOUND = "Administrador no encontrado";
+    private static final String USER_NOT_FOUND = "Usuario no encontrado";
     private static final String WORKER_NOT_FOUND = "Trabajador no encontrado";
     private static final String CONFIRMATION_CODE_IS = "Tu código de confirmación es: ";
 
@@ -78,41 +79,6 @@ public class AccountService {
         this.encryptionService = encryptionService;
         this.objectMapper = objectMapper;
         this.smsService = smsService;
-    }
-
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<Long> updateCommonUserInfo(Long userId, CommonUserDto commonUserDto) {
-        CommonUser commonUser = commonUserRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        commonUser.setUserCellphone(commonUserDto.getUserCellphone());
-        commonUser.setUserEmail(commonUserDto.getUserEmail());
-        commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
-        commonUser.setUserName(commonUserDto.getUserName());
-        commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
-        commonUserRepository.save(commonUser);
-        return new Response<>(commonUser.getCommonUserId(), false, 200, "Información del usuario actualizada con éxito.");
-    }
-
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<String> updateCommonUserProfilePic(Long userId, MultipartFile userProfilePic) throws IOException {
-        CommonUser commonUser = commonUserRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        if (!userProfilePic.isEmpty()) {
-            if (commonUser.getUserProfilePicUrl() != null && !commonUser.getUserProfilePicUrl().isEmpty()) {
-                try {
-                    firebaseStorageService.deleteFileFromFirebase(commonUser.getUserProfilePicUrl(), COMMON_USER_DIRECTORY);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
-                }
-            }
-            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, COMMON_USER_DIRECTORY);
-            commonUser.setUserProfilePicUrl(imageUrl);
-            commonUserRepository.save(commonUser);
-            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
-        } else {
-            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
-        }
     }
 
     @Transactional(rollbackFor = {SQLException.class})
@@ -244,12 +210,41 @@ public class AccountService {
         administrator.setAdminName(adminDto.getAdminName());
         administrator.setAdminFirstLastName(adminDto.getAdminFirstLastName());
         administrator.setAdminSecondLastName(adminDto.getAdminSecondLastName());
-        administrator.setAdminSecurityNumber(adminDto.getAdminSecurityNumber());
-        Long adminSalary = Long.parseLong(adminDto.getAdminSalary());
-        administrator.setAdminSalary(adminSalary);
         administratorRepository.save(administrator);
         return new Response<>("Admin actualizado", false, 200, "Información del administrador actualizada con éxito.");
     }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> updateWorkerInfo(String encryptedData) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
+        Long workerId = Long.parseLong(workerDto.getWorkerId());
+        Worker worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
+
+        worker.setWorkerName(workerDto.getWorkerName());
+        worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
+        worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
+        workerRepository.save(worker);
+        return new Response<>("Trabajador actualizado", false, 200, "Información del trabajador actualizada con éxito.");
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> updateCommonUserInfo(String encryptedData) throws Exception{
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        CommonUserDto commonUserDto = objectMapper.readValue(decryptedDataJson, CommonUserDto.class);
+        Long userId = Long.parseLong(commonUserDto.getCommonUserId());
+        CommonUser commonUser = commonUserRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
+
+        commonUser.setUserCellphone(commonUserDto.getUserCellphone());
+        commonUser.setUserFirstLastName(commonUserDto.getUserFirstLastName());
+        commonUser.setUserName(commonUserDto.getUserName());
+        commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
+        commonUserRepository.save(commonUser);
+        return new Response<>("Usuario actualizado", false, 200, "Información del usuario actualizada con éxito.");
+    }
+
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> deleteAdmin(String encryptedData) throws Exception{
@@ -296,6 +291,55 @@ public class AccountService {
             String imageUrl = firebaseStorageService.uploadFile(adminProfilePic, ADMINS_DIRECTORY);
             administrator.setAdminProfilePicUrl(imageUrl);
             administratorRepository.save(administrator);
+            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
+        } else {
+            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
+        }
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> updateWorkerProfilePic(String encryptedData, MultipartFile workerProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
+        Worker worker = workerRepository.findById(Long.parseLong(workerDto.getWorkerId()))
+                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
+        if (!workerProfilePic.isEmpty()) {
+            if (worker.getWorkerProfilePicUrl() != null && !worker.getWorkerProfilePicUrl().isEmpty()) {
+                try {
+                    firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), WORKERS_DIRECTORY);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
+                }
+            }
+            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, WORKERS_DIRECTORY);
+            worker.setWorkerProfilePicUrl(imageUrl);
+            workerRepository.save(worker);
+            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
+        } else {
+            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
+        }
+    }
+
+    @Transactional(rollbackFor = {SQLException.class})
+    public Response<String> updateCommonUserProfilePic(String encryptedData, MultipartFile userProfilePic) throws Exception {
+        String decryptedDataJson = encryptionService.decrypt(encryptedData);
+        CommonUserDto commonUserDto = objectMapper.readValue(decryptedDataJson, CommonUserDto.class);
+        CommonUser commonUser = commonUserRepository.findById(Long.parseLong(commonUserDto.getCommonUserId()))
+                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
+
+        if (!userProfilePic.isEmpty()) {
+            if (commonUser.getUserProfilePicUrl() != null && !commonUser.getUserProfilePicUrl().isEmpty()) {
+                try {
+                    firebaseStorageService.deleteFileFromFirebase(commonUser.getUserProfilePicUrl(), COMMON_USER_DIRECTORY);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
+                }
+            }
+            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, COMMON_USER_DIRECTORY);
+            commonUser.setUserProfilePicUrl(imageUrl);
+            commonUserRepository.save(commonUser);
             return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
         } else {
             return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
@@ -369,26 +413,6 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<String> updateWorkerInfo(String encryptedData) throws Exception {
-        String decryptedDataJson = encryptionService.decrypt(encryptedData);
-        WorkerDto workerDto = objectMapper.readValue(decryptedDataJson, WorkerDto.class);
-        Long workerId = Long.parseLong(workerDto.getWorkerId());
-        Worker worker = workerRepository.findById(workerId)
-                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
-
-        worker.setWorkerName(workerDto.getWorkerName());
-        worker.setWorkerFirstLastName(workerDto.getWorkerFirstLastName());
-        worker.setWorkerSecondLastName(workerDto.getWorkerSecondLastName());
-        worker.setWorkerCellphone(workerDto.getWorkerCellphone());
-        worker.setWorkerSecurityNumber(workerDto.getWorkerSecurityNumber());
-        Long workerSalary = Long.parseLong(workerDto.getWorkerSalary());
-        worker.setWorkerSalary(workerSalary);
-        worker.setWorkerRfc(workerDto.getWorkerRfc());
-        workerRepository.save(worker);
-        return new Response<>("Trabajador actualizado", false, 200, "Información del trabajador actualizada con éxito.");
-    }
-
-    @Transactional(rollbackFor = {SQLException.class})
     public Response<String> deleteWorker(String encryptedData) throws Exception{
         String correctedData = encryptedData.replace("\"", "");
         String decryptedDataJson = encryptionService.decrypt(correctedData);
@@ -418,29 +442,6 @@ public class AccountService {
         return new Response<>("Trabajador eliminado", false, 200, "Trabajador eliminado con exito.");
     }
 
-
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<String> updateWorkerProfilePic(Long workerId, MultipartFile workerProfilePic) throws IOException {
-        Worker worker = workerRepository.findById(workerId)
-                .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
-        if (!workerProfilePic.isEmpty()) {
-            if (worker.getWorkerProfilePicUrl() != null && !worker.getWorkerProfilePicUrl().isEmpty()) {
-                try {
-                    firebaseStorageService.deleteFileFromFirebase(worker.getWorkerProfilePicUrl(), WORKERS_DIRECTORY);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return new Response<>(true, 500, ERROR_DELETING_PHOTO + e.getMessage());
-                }
-            }
-            String imageUrl = firebaseStorageService.uploadFile(workerProfilePic, WORKERS_DIRECTORY);
-            worker.setWorkerProfilePicUrl(imageUrl);
-            workerRepository.save(worker);
-            return new Response<>(imageUrl, false, 200, SUCCESSFUL_UPDATE);
-        } else {
-            return new Response<>(true, 400, PHOTO_CANT_BE_EMPTY);
-        }
-    }
-
     public Object getLoggedUserProfile(String username, String role) throws Exception {
         switch (role) {
             case ROLE_ADMIN -> {
@@ -451,12 +452,12 @@ public class AccountService {
             case ROLE_WORKER -> {
                 Worker worker = workerRepository.findByWorkerEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException(WORKER_NOT_FOUND));
-                return new WorkerGiveInfoDto(worker);
+                return new WorkerGiveInfoDto(worker).encryptFields(encryptionService);
             }
             case ROLE_COMMON_USER -> {
                 CommonUser commonUser = commonUserRepository.findByUserEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Usuario común no encontrado"));
-                return new CommonUserGiveInfoDto(commonUser);
+                return new CommonUserGiveInfoDto(commonUser).encryptFields(encryptionService);
             }
             default -> throw new IllegalStateException("Tipo de usuario desconocido");
         }

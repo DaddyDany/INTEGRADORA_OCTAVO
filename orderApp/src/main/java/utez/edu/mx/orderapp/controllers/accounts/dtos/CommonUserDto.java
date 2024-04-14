@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class CommonUserDto {
-    private Long userId;
+    private String commonUserId;
     private String userName;
     private String userFirstLastName;
     private String userSecondLastName;
