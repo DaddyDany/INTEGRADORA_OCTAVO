@@ -39,18 +39,19 @@ public class Package {
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(max = 20, message = "El nombre debe tener máximo 20 caracteres")
     @Column(name = "package_name")
     private String packageName;
 
     @NotNull(message = "La descripción no debe ser nula")
     @NotBlank(message = "La descripción no debe ir vacía")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo solo puede contener letras, puntos, comas, y caracteres acentuados")
-    @Size(min = 50, max = 3000, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 3000 caracteres")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ0-9;.,\\s()!?]*$", message = "El campo descripción solo puede contener letras, números, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
+    @Size(min = 50, max = 500, message = "La descripción del paquete debe tener como mínimo 50 y como máximo 500 caracteres")
     @Column(name = "package_description")
     private String packageDescription;
 
     @NotNull(message = "El precio no debe ser nulo")
-    @Max(value = 15000, message = "El precio no debe ser superior a 15000, dudo que alguien pague eso")
+    @Max(value = 15000, message = "El precio no debe ser superior a 15000")
     @Min(value = 1, message = "El precio no debe ser negativo")
     @Column(name = "package_price")
     private Long packagePrice;
@@ -59,9 +60,11 @@ public class Package {
 
     @NotNull(message = "Las horas no deben ser nulas")
     @Min(value = 1, message = "Las horas no deben ser negativas")
+    @Max(value = 8, message = "Las horas no debe ser superiores a 8")
     @Column(name = "designated_hours")
     private Integer designatedHours;
 
+    @Max(value = 15, message = "El número de trabajadores no debe ser superior a 15")
     @NotNull(message = "El número de trabajadores no debe ser nulo")
     @Min(value = 1, message = "El número de trabajadores no debe ser negativo")
     @Column(name = "workers_number")

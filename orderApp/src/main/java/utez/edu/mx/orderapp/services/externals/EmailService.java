@@ -34,4 +34,6 @@ public class EmailService {
             throw new RuntimeException("Error sending confirmation email", ex);
         }
     }
+
+
 }
