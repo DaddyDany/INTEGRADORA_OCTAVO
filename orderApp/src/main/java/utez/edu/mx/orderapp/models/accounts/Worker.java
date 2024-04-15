@@ -87,7 +87,7 @@ public class Worker {
 
     @NotNull(message = "El RFC no debe ser nulo")
     @NotBlank(message = "El RFC no debe estar en blanco")
-    @Column(name = "worker_rfc")
+    @Column(name = "worker_rfc", unique = true)
     private String workerRfc;
     @Column(name = "account_status")
     private String accountStatus = "Sin confirmar";
