@@ -32,12 +32,13 @@ public class Category {
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo nombre solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(max = 20, message = "El nombre debe tener máximo 20 caracteres")
     @Column(name = "service_name")
     private String serviceName;
     @NotNull(message = "La descripción no debe ser nula")
     @NotBlank(message = "La descripción no debe ir vacía")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s()!?]*$", message = "El campo descripción solo puede contener letras, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
-    @Size(min = 50, max = 3000, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 3000 caracteres")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ0-9;.,\\s()!?]*$", message = "El campo descripción solo puede contener letras, números, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
+    @Size(min = 50, max = 500, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 500 caracteres")
     @Column(name = "service_description")
     private String serviceDescription;
     @NotNull(message = "La frase no debe ser nula")

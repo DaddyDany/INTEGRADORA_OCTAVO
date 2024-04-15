@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,26 +36,30 @@ public class Combo {
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo nombre solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(max = 20, message = "El nombre del combo debe tener máximo 20 caracteres")
     @Column(name = "combo_name")
     private String comboName;
     @NotNull(message = "La descripción no debe ser nula")
     @NotBlank(message = "La descripción no debe ir vacía")
-    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ.,\\s]*$", message = "El campo descripción solo puede contener letras, puntos, comas, y caracteres acentuados")
-    @Size(min = 50, max = 3000, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 3000 caracteres")
+    @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ0-9;.,\\s()!?]*$", message = "El campo descripción solo puede contener letras, números, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
+    @Size(min = 50, max = 500, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 500 caracteres")
     @Column(name = "combo_description")
     private String comboDescription;
     @Column(name = "combo_img_url")
     private String comboImgUrl;
-    @NotNull(message = "El número de trabajadores no debe ser nulo")
+    @NotNull(message = "El precio no debe ser nulo")
+    @Max(value = 20000, message = "El precio del paquete no debe ser superios 20000")
     @Min(value = 1, message = "El precio no debe ser negativo")
     @Column(name = "combo_price")
     private Long comboPrice;
-    @NotNull(message = "El número de trabajadores no debe ser nulo")
+    @NotNull(message = "Las horas no deben ser nulas")
+    @Max(value = 8, message = "Las horas designadas no deben superiores a 8")
     @Min(value = 1, message = "Las horas no deben ser negativo")
     @Column(name = "combo_designated_hours")
     private Integer comboDesignatedHours;
     @NotNull(message = "El número de trabajadores no debe ser nulo")
-    @Min(value = 1, message = "Las horas no deben ser negativo")
+    @Max(value = 15, message = "El número de trabajadores no debe ser superior a 15")
+    @Min(value = 1, message = "El número de trabajadores no debe ser negativo")
     @Column(name = "combo_workers_number")
     private Integer comboWorkersNumber;
     @JsonIgnore

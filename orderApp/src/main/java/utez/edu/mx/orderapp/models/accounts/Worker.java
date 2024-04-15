@@ -36,18 +36,21 @@ public class Worker {
     @NotNull(message = "El nombre no debe ser nulo")
     @NotBlank(message = "El nombre no debe ir vacío")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo nombre solo puede contener letras y caracteres acentuados")
+    @Size(max = 20, message = "El nombre debe tener máximo 20 caracteres")
     @Column(name = "worker_name")
     private String workerName;
 
     @NotNull(message = "El apellido paterno no debe ser nulo")
     @NotBlank(message = "El apellido paterno no debe ir vacío")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido paterno solo puede contener letras y caracteres acentuados")
+    @Size(max = 20, message = "El apellido paterno debe tener máximo 20 caracteres")
     @Column(name = "worker_first_last_name")
     private String workerFirstLastName;
 
     @NotNull(message = "El apellido materno no debe ser nulo")
     @NotBlank(message = "El apellido materno no debe ir vacío")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\\s]*$", message = "El campo apellido materno solo puede contener letras, puntos, comas, y caracteres acentuados")
+    @Size(max = 20, message = "El apellido materno debe tener máximo 20 caracteres")
     @Column(name = "worker_second_last_name")
     private String workerSecondLastName;
 
@@ -84,7 +87,7 @@ public class Worker {
 
     @NotNull(message = "El RFC no debe ser nulo")
     @NotBlank(message = "El RFC no debe estar en blanco")
-    @Column(name = "worker_rfc", unique = true)
+    @Column(name = "worker_rfc")
     private String workerRfc;
     @Column(name = "account_status")
     private String accountStatus = "Sin confirmar";
