@@ -7,7 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,8 +25,6 @@ import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.services.accounts.AccountService;
 import utez.edu.mx.orderapp.utils.Response;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,8 +47,8 @@ public class AccountController {
         this.workerRepository = workerRepository;
     }
     @PostMapping("/create-common")
-    public ResponseEntity<Response<String>> createCommonUserAccount(@RequestPart("data") String encryptedData, @RequestParam(value = "userProfilePic", required = false) MultipartFile userProfilePic) throws Exception{
-        Response<String> response = accountService.createCommonUserAccount(encryptedData, userProfilePic);
+    public ResponseEntity<Response<String>> createCommonUserAccount(@RequestPart("data") String encryptedData) throws Exception{
+        Response<String> response = accountService.createCommonUserAccount(encryptedData);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
