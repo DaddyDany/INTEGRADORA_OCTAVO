@@ -2,6 +2,8 @@ package utez.edu.mx.orderapp.services.accounts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,9 @@ import utez.edu.mx.orderapp.utils.EncryptionService;
 import utez.edu.mx.orderapp.utils.Response;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -82,7 +87,7 @@ public class AccountService {
     }
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<String> createCommonUserAccount(String encryptedData, MultipartFile userProfilePic) throws Exception {
+    public Response<String> createCommonUserAccount(String encryptedData) throws Exception {
         String decryptedDataJson = encryptionService.decrypt(encryptedData);
         CommonUserDto commonUserDto = objectMapper.readValue(decryptedDataJson, CommonUserDto.class);
         CommonUser commonUser = new CommonUser();
@@ -95,10 +100,11 @@ public class AccountService {
         }
         commonUser.setUserPassword(passwordEncoder.encode(commonUserDto.getUserPassword()));
         commonUser.setUserSecondLastName(commonUserDto.getUserSecondLastName());
-        if (userProfilePic != null && !userProfilePic.isEmpty()) {
-            String imageUrl = firebaseStorageService.uploadFile(userProfilePic, COMMON_USER_DIRECTORY);
-            commonUser.setUserProfilePicUrl(imageUrl);
-        }
+        Resource imageResource = new ClassPathResource("static/images/user.png");
+        String contentType = "image/png";
+        String fileName = "imagengenerica.png";
+        String imageUrl = firebaseStorageService.uploadFile(imageResource.getInputStream(), contentType, COMMON_USER_DIRECTORY, fileName);
+        commonUser.setUserProfilePicUrl(imageUrl);
         Role role = roleRepository.findByRoleName(ROLE_COMMON_USER)
                 .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND));
         commonUser.setRole(role);

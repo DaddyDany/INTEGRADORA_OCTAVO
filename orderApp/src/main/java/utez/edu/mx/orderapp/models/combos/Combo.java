@@ -42,19 +42,19 @@ public class Combo {
     @NotNull(message = "La descripción no debe ser nula")
     @NotBlank(message = "La descripción no debe ir vacía")
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ0-9;.,\\s()!?]*$", message = "El campo descripción solo puede contener letras, números, puntos, comas, paréntesis, signos de exclamación, signos de interrogación y caracteres acentuados")
-    @Size(min = 50, max = 500, message = "La descripción del servicio debe tener como mínimo 50 y como máximo 500 caracteres")
+    @Size(min = 50, max = 500, message = "La descripción del combo debe tener como mínimo 50 y como máximo 500 caracteres")
     @Column(name = "combo_description")
     private String comboDescription;
     @Column(name = "combo_img_url")
     private String comboImgUrl;
     @NotNull(message = "El precio no debe ser nulo")
-    @Max(value = 20000, message = "El precio del paquete no debe ser superios 20000")
+    @Max(value = 20000, message = "El precio del combo no debe ser superios 20000")
     @Min(value = 1, message = "El precio no debe ser negativo")
     @Column(name = "combo_price")
     private Long comboPrice;
     @NotNull(message = "Las horas no deben ser nulas")
     @Max(value = 8, message = "Las horas designadas no deben superiores a 8")
-    @Min(value = 1, message = "Las horas no deben ser negativo")
+    @Min(value = 1, message = "Las horas no deben ser negativas")
     @Column(name = "combo_designated_hours")
     private Integer comboDesignatedHours;
     @NotNull(message = "El número de trabajadores no debe ser nulo")
