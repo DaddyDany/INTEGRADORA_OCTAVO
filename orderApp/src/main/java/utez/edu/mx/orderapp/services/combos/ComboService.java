@@ -54,8 +54,11 @@ public class ComboService {
     }
 
     @Transactional(readOnly = true)
-    public Response<Combo> getOne(long id) {
-        Optional<Combo> combo = this.comboRepository.findById(id);
+    public Response<Combo> getOne(String encryptedData) throws Exception{
+        String correctedData = encryptedData.replace("\"", "");
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+        ComboDto comboDto = objectMapper.readValue(decryptedDataJson, ComboDto.class);
+        Optional<Combo> combo = this.comboRepository.findById(Long.parseLong(comboDto.getComboId()));
         return combo.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Combo fetched successfully"))
                 .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Combo not found"));
     }
@@ -128,8 +131,8 @@ public class ComboService {
         return new Response<>("Servicio eliminado", false, 200, "Servicio eliminado con exito.");
     }
 
-    public List<Package> getPackagesByComboId(Long comboId) {
-        List<PackageCombo> packageCombos = packageComboRepository.findByComboComboId(comboId);
-        return packageCombos.stream().map(PackageCombo::getAPackage).collect(Collectors.toList());
-    }
+//    public List<Package> getPackagesByComboId(Long comboId) {
+//        List<PackageCombo> packageCombos = packageComboRepository.findByComboComboId(comboId);
+//        return packageCombos.stream().map(PackageCombo::getAPackage).collect(Collectors.toList());
+//    }
 }

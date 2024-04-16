@@ -5,21 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-import utez.edu.mx.orderapp.controllers.orders.dtos.OrderDto;
 import utez.edu.mx.orderapp.controllers.orders.dtos.OrderInfoDto;
 import utez.edu.mx.orderapp.models.accounts.CommonUser;
 import utez.edu.mx.orderapp.models.accounts.Worker;
-import utez.edu.mx.orderapp.models.orders.Order;
 import utez.edu.mx.orderapp.repositories.accounts.CommonUserRepository;
 import utez.edu.mx.orderapp.repositories.accounts.WorkerRepository;
 import utez.edu.mx.orderapp.services.orders.OrderService;
@@ -53,15 +47,15 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Order> getOne(@PathVariable("id") Long id) {
-        Response<Order> response = orderService.getOne(id);
-        if (response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Order> getOne(@PathVariable("id") Long id) {
+//        Response<Order> response = orderService.getOne(id);
+//        if (response.isSuccess()){
+//            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+//        }else{
+//            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+//        }
+//    }
 
     @PostMapping
     public ResponseEntity<Response<String>> createOrder(@RequestBody String encryptedData, Authentication authentication) throws Exception {
@@ -71,20 +65,6 @@ public class OrderController {
         Long userId = commonUser.getCommonUserId();
         Response<String> response = orderService.createOrder(encryptedData, userId);
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") Long id, @RequestBody OrderDto orderDto) {
-        CommonUser commonUser = commonUserRepository.findById(orderDto.getCommonUserId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-        Order order = orderDto.toOrder(commonUser);
-        order.setOrderId(id);
-        Response<Order> response = this.orderService.updateOrder(order);
-        if (response.isSuccess()){
-            return ResponseEntity.ok(response.getData());
-        } else {
-            return ResponseEntity.status(HttpStatus.valueOf(response.getStatus())).body(response.getMessage());
-        }
     }
 
     @PatchMapping("/decline")
@@ -105,15 +85,6 @@ public class OrderController {
         return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Order> delete(@PathVariable("id") Long id) {
-        Response<Order> response = this.orderService.deleteOrder(id);
-        if (response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
-    }
 
     @GetMapping("/my-orders")
     public ResponseEntity<List<OrderInfoDto>> getMyOrders(Authentication authentication) {

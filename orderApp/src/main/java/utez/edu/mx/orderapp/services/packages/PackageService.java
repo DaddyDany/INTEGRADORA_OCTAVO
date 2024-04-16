@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import utez.edu.mx.orderapp.controllers.categories.dtos.CategoryDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.ImageInfoDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.PackageDto;
 import utez.edu.mx.orderapp.controllers.packages.dtos.PackageInfoDto;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -46,15 +48,18 @@ public class PackageService {
         this.objectMapper = objectMapper;
     }
 
-    @Transactional(readOnly = true)
-    public Response<Package> getOne(long id) {
-        Optional<Package> aPackage = this.packageRepository.findById(id);
-        return aPackage.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Package fetched successfully"))
-                .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Package not found"));
-    }
+//    @Transactional(readOnly = true)
+//    public Response<Package> getOne(long id) {
+//        Optional<Package> aPackage = this.packageRepository.findById(id);
+//        return aPackage.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Package fetched successfully"))
+//                .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Package not found"));
+//    }
 
-    public Response<PackageInfoDto> getPackageWithImages(Long packageId) {
-        return packageRepository.findById(packageId).map(aPackage -> {
+    public Response<PackageInfoDto> getPackageWithImages(String encryptedData) throws Exception {
+        String correctedData = encryptedData.replace("\"", "");
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+        PackageDto packageDto = objectMapper.readValue(decryptedDataJson, PackageDto.class);
+        return packageRepository.findById(Long.parseLong(packageDto.getPackageId())).map(aPackage -> {
             List<ImageInfoDto> imageInfoDtos = aPackage.getImagePackages().stream()
                     .map(imagePackage -> new ImageInfoDto(imagePackage.getImageUrl()))
                     .toList();
@@ -159,7 +164,11 @@ public class PackageService {
 
 
     @Transactional(rollbackFor = {SQLException.class})
-    public Response<List<Package>> findAllPackagesByServiceId(Long serviceId) {
+    public Response<List<Package>> findAllPackagesByServiceId(String encryptedData) throws Exception {
+        String correctedData = encryptedData.replace("\"", "");
+        String decryptedDataJson = encryptionService.decrypt(correctedData);
+        CategoryDto categoryDto = objectMapper.readValue(decryptedDataJson, CategoryDto.class);
+        Long serviceId = Long.valueOf(categoryDto.getServiceId());
         List<Package> packages = this.packageRepository.findByServiceId(serviceId);
         if (packages.isEmpty()){
             return new Response<>(true, HttpStatus.NO_CONTENT.value(), "No packages found");
@@ -167,5 +176,4 @@ public class PackageService {
             return new Response<>(packages, false, HttpStatus.OK.value(), "Packages fetched successfully");
         }
     }
-
 }

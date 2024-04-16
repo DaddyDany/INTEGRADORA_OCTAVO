@@ -79,21 +79,22 @@ private final PackageRepository packageRepository;
         return dto;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Package> getOne(@PathVariable("id") Long id) {
-        Response<Package> response = this.packageService.getOne(id);
-        if (response.isSuccess()) {
-            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Package> getOne(@PathVariable("id") Long id) {
+//        Response<Package> response = this.packageService.getOne(id);
+//        if (response.isSuccess()) {
+//            return new ResponseEntity<>(response.getData(), HttpStatus.OK);
+//        }else{
+//            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
+//        }
+//    }
 
-    @GetMapping("/package-info-users/{id}")
-    public ResponseEntity<PackageInfoDto> getPackage(@PathVariable("id") Long id) {
-        Response<PackageInfoDto> response = packageService.getPackageWithImages(id);
+    @PostMapping("/package-info-users")
+    public ResponseEntity<PackageInfoDto> getPackage(@RequestBody String encryptedData) throws Exception {
+        Response<PackageInfoDto> response = packageService.getPackageWithImages(encryptedData);
         return ResponseEntity.ok(response.getData());
     }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Response<Package>> insertPackage(
             @RequestPart("data") String encryptedData,
