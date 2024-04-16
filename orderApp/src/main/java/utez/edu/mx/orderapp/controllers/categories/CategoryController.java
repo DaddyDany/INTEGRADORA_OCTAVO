@@ -35,7 +35,6 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final PackageService packageService;
 
-
     @Autowired
     public CategoryController(CategoryService categoryService, PackageService packageService, CategoryRepository categoryRepository){
         this.categoryService = categoryService;
@@ -48,19 +47,9 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Category> getOne(@PathVariable Long id) {
-        Response<Category> response = this.categoryService.getOne(id);
-        if(response.isSuccess()){
-            return new ResponseEntity<>(response.getData(), HttpStatus.valueOf(response.getStatus()));
-        } else {
-            return new ResponseEntity<>(HttpStatus.valueOf(response.getStatus()));
-        }
-    }
-
-    @GetMapping("/{serviceId}/packages")
-    public ResponseEntity<List<Package>> getAllPackagesByServiceId(@PathVariable Long serviceId) {
-        Response<List<Package>> response = this.packageService.findAllPackagesByServiceId(serviceId);
+    @PostMapping("/packages/from-service")
+    public ResponseEntity<List<Package>> getAllPackagesByServiceId(@RequestBody String encryptedData) throws Exception {
+        Response<List<Package>> response = this.packageService.findAllPackagesByServiceId(encryptedData);
         if (response.isSuccess()){
             return new ResponseEntity<>(response.getData(), HttpStatus.valueOf(response.getStatus()));
         } else {

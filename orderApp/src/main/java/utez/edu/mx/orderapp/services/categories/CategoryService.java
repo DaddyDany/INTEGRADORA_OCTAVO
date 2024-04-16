@@ -65,12 +65,6 @@ public class CategoryService {
         return dto;
     }
 
-    @Transactional(readOnly = true)
-    public Response<Category> getOne(long id) {
-        Optional<Category> category = this.categoryRepository.findById(id);
-        return category.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Category fetched successfully"))
-                .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Category not found"));
-    }
 
     @Transactional(rollbackFor = {SQLException.class})
     public Response<String> insertCategory(String encryptedData, MultipartFile serviceImage) throws Exception{

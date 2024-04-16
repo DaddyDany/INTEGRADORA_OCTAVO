@@ -77,12 +77,12 @@ public class OrderService {
         return new Response<>(dtoList, false, 200, "OK");
     }
 
-    @Transactional(readOnly = true)
-    public Response<Order> getOne(long id) {
-        Optional<Order> order = this.orderRepository.findById(id);
-        return order.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Order fetched successfully"))
-                .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Order not found"));
-    }
+//    @Transactional(readOnly = true)
+//    public Response<Order> getOne(long id) {
+//        Optional<Order> order = this.orderRepository.findById(id);
+//        return order.map(value -> new Response<>(value, false, HttpStatus.OK.value(), "Order fetched successfully"))
+//                .orElseGet(() -> new Response<>(true, HttpStatus.NOT_FOUND.value(), "Order not found"));
+//    }
 
     @Transactional
     public Response<String> createOrder(String encryptedData, Long userId) throws Exception{
@@ -301,41 +301,6 @@ public class OrderService {
         return new Response<>("Completada", false, HttpStatus.CREATED.value(), "La orden ha sido marcada como completada con exito");
     }
 
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<Order> updateOrder(Order order) {
-        if (this.orderRepository.existsById(order.getOrderId()))
-            return new Response<>(
-                    this.orderRepository.saveAndFlush(order),
-                    false,
-                    200,
-                    "Orden actualizada correctamente"
-            );
-        return new Response<>(
-                null,
-                true,
-                200,
-                "No existe la order solicitada"
-        );
-    }
-
-    @Transactional(rollbackFor = {SQLException.class})
-    public Response<Order> deleteOrder(Long id) {
-        if (this.orderRepository.existsById(id)) {
-            this.orderRepository.deleteById(id);
-            return new Response<>(
-                    null,
-                    false,
-                    200,
-                    "Orden eliminada correctamente"
-            );
-        }
-        return new Response<>(
-                null,
-                true,
-                200,
-                "No existe la orden solicitada"
-        );
-    }
 
     public List<OrderInfoDto> findOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findByCommonUserCommonUserId(userId);
